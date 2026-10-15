@@ -1,0 +1,71 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Usuario\\Desktop\\UTN\\TPI-FINAL-G39\\api\\RutasInclusivasAPI\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{6F91CCBF-8222-4806-9923-872C18FD959D}|RutasInclusivasAPI.csproj|c:\\users\\usuario\\desktop\\utn\\tpi-final-g39\\api\\rutasinclusivasapi\\controllers\\usuarioscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F91CCBF-8222-4806-9923-872C18FD959D}|RutasInclusivasAPI.csproj|solutionrelative:controllers\\usuarioscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F91CCBF-8222-4806-9923-872C18FD959D}|RutasInclusivasAPI.csproj|c:\\users\\usuario\\desktop\\utn\\tpi-final-g39\\api\\rutasinclusivasapi\\models\\usuarioregistro.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F91CCBF-8222-4806-9923-872C18FD959D}|RutasInclusivasAPI.csproj|solutionrelative:models\\usuarioregistro.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F91CCBF-8222-4806-9923-872C18FD959D}|RutasInclusivasAPI.csproj|c:\\users\\usuario\\desktop\\utn\\tpi-final-g39\\api\\rutasinclusivasapi\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{6F91CCBF-8222-4806-9923-872C18FD959D}|RutasInclusivasAPI.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "UsuariosController.cs",
+              "DocumentMoniker": "C:\\Users\\Usuario\\Desktop\\UTN\\TPI-FINAL-G39\\api\\RutasInclusivasAPI\\Controllers\\UsuariosController.cs",
+              "RelativeDocumentMoniker": "Controllers\\UsuariosController.cs",
+              "ToolTip": "C:\\Users\\Usuario\\Desktop\\UTN\\TPI-FINAL-G39\\api\\RutasInclusivasAPI\\Controllers\\UsuariosController.cs",
+              "RelativeToolTip": "Controllers\\UsuariosController.cs",
+              "ViewState": "AgIAAEQAAAAAAAAAAAAwwFYAAABRAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-15T23:16:07.353Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "UsuarioRegistro.cs",
+              "DocumentMoniker": "C:\\Users\\Usuario\\Desktop\\UTN\\TPI-FINAL-G39\\api\\RutasInclusivasAPI\\Models\\UsuarioRegistro.cs",
+              "RelativeDocumentMoniker": "Models\\UsuarioRegistro.cs",
+              "ToolTip": "C:\\Users\\Usuario\\Desktop\\UTN\\TPI-FINAL-G39\\api\\RutasInclusivasAPI\\Models\\UsuarioRegistro.cs",
+              "RelativeToolTip": "Models\\UsuarioRegistro.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-15T23:12:20.909Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Usuario\\Desktop\\UTN\\TPI-FINAL-G39\\api\\RutasInclusivasAPI\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\Usuario\\Desktop\\UTN\\TPI-FINAL-G39\\api\\RutasInclusivasAPI\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-10-15T21:48:09.132Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
