@@ -75,7 +75,7 @@ namespace RutasInclusivasAPI.Controllers
         }
 
         // 3. BAJA (DELETE) BAJA FISICA
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}/fisica")]
         public IActionResult EliminarUsuario(int id)
         {
             try
@@ -101,5 +101,52 @@ namespace RutasInclusivasAPI.Controllers
                 return StatusCode(500, new { error = "Error al eliminar", detalle = ex.Message });
             }
         }
+
+        // 4. BAJA (DELETE) BAJA LOGICA
+        [HttpDelete("{id}/logica")]
+        public IActionResult EliminarUsuarioLogica(int id)
+        {
+            try
+            {
+                using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
+                {
+                    conexion.Open();
+
+                    string query = @"
+                        UPDATE USUARIOS
+                        SET Activo = FALSE
+                        WHERE ID_Usuario = @Id
+                        AND Activo = TRUE";
+
+                    using (MySqlCommand comando = new MySqlCommand(query, conexion))
+                    {
+                        comando.Parameters.AddWithValue("@Id", id);
+
+                        int filas = comando.ExecuteNonQuery();
+                        if (filas == 0)
+                        {
+                            return NotFound(new
+                            {
+                                mensaje = "Usuario no encontrado o ya inactivo"
+                            });
+                        }
+                    }
+                }
+
+                return Ok(new
+                {
+                    mensaje = "Usuario eliminado logicamente"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    error = "Error al dar de baja al usuario",
+                    detalle = ex.Message
+                });
+            }
+        }
+
     }
 }
