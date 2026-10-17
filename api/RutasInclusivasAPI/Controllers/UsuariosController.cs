@@ -18,25 +18,31 @@ namespace RutasInclusivasAPI.Controllers
 
         // 1. ALTA (POST)
         [HttpPost]
-        public IActionResult RegistrarUsuario([FromBody] UsuarioRegistro usuario)
+        public async Task<IActionResult> RegistrarUsuario([FromBody] UsuarioRegistro usuario)
         {
             try
             {
+                string contrasenaHash = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasena);
+
                 using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
                 {
-                    conexion.Open();
+                    await conexion.OpenAsync();
                     string query = "INSERT INTO USUARIOS (Nombre_Usuario, Correo, Contrasena, Zona) VALUES (@Nombre, @Correo, @Contrasena, @Zona)";
 
                     using (MySqlCommand comando = new MySqlCommand(query, conexion))
                     {
                         comando.Parameters.AddWithValue("@Nombre", usuario.Nombre_Usuario);
                         comando.Parameters.AddWithValue("@Correo", usuario.Correo);
-                        comando.Parameters.AddWithValue("@Contrasena", usuario.Contrasena);
+                        comando.Parameters.AddWithValue("@Contrasena", contrasenaHash);
                         comando.Parameters.AddWithValue("@Zona", usuario.Zona);
-                        comando.ExecuteNonQuery();
+                        await comando.ExecuteNonQueryAsync();
                     }
                 }
                 return Ok(new { mensaje = "Usuario registrado exitosamente" });
+            }
+            catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
+            {
+                return Conflict(new { error = "El correo o el nombre de usuario ya están registrados." });
             }
             catch (Exception ex)
             {
