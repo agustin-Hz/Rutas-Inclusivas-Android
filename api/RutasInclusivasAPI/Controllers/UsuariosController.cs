@@ -13,7 +13,7 @@ namespace RutasInclusivasAPI.Controllers
         public UsuariosController(IConfiguration config)
         {
             // Toma la conexión del appsettings.json
-            _cadenaConexion = config.GetConnectionString("ConexionMySQL");
+            _cadenaConexion = config.GetConnectionString("ConexionMySQL") ?? throw new InvalidOperationException("Falta la cadena de conexión ConexionMySQL.");
         }
 
         // 1. ALTA (POST)
