@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "FldPKgVSNco=",
+  "dgSpecHash": "7knqylF2Sik=",
   "success": true,
-  "projectFilePath": "C:\\Users\\quest\\OneDrive\\Escritorio\\repoTFI\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj",
+  "projectFilePath": "c:\\Users\\quest\\OneDrive\\Escritorio\\TFI2\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\quest\\.nuget\\packages\\bcrypt.net-next\\4.2.0\\bcrypt.net-next.4.2.0.nupkg.sha512",
     "C:\\Users\\quest\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.32\\microsoft.aspnetcore.authentication.jwtbearer.8.0.32.nupkg.sha512",

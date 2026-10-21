@@ -1,19 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F8FAFF"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp">
+
+            <!-- Logo provisional -->
+            <TextView
+                android:layout_width="104dp"
+                android:layout_height="104dp"
+                android:gravity="center"
+                android:background="@drawable/logo_background"
+                android:text="♿"
+                android:textSize="62sp"
+                android:textColor="#FFFFFF"
+                android:contentDescription="Símbolo de accesibilidad"
+                android:importantForAccessibility="yes" />
+
+            <!-- Nombre de la aplicación -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Rutas Inclusivas"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:textColor="#123B70"
+                android:gravity="center" />
+
+            <!-- Subtítulo -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Mapa colaborativo de\naccesibilidad urbana"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#24588B"
+                android:gravity="center" />
+
+            <!-- Ilustración urbana provisional -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:padding="16dp"
+                android:background="#E7F2FF"
+                android:gravity="center"
+                android:text="🏙️ 🏢 🌳\n\n🌳  ♿  🚦  🌳"
+                android:textSize="34sp"
+                android:lineSpacingExtra="8dp"
+                android:contentDescription="Ilustración de una ciudad con espacios accesibles" />
+
+            <!-- Descripción -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Juntos construimos una ciudad más accesible. Reportá obstáculos, consultá rutas y ayudá a que todos puedan llegar."
+                android:textSize="15sp"
+                android:textColor="#334155"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp" />
+
+            <!-- Botón principal -->
+            <Button
+                android:id="@+id/btnComenzar"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="28dp"
+                android:text="Comenzar"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#0866D9"
+                android:minHeight="56dp" />
+
+            <!-- Botón secundario -->
+            <Button
+                android:id="@+id/btnIniciarSesion"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:text="Ya tengo una cuenta"
+                android:textSize="15sp"
+                android:textColor="#0755A6"
+                android:backgroundTint="#DCEBFF"
+                android:minHeight="56dp" />
+
+            <!-- Mensaje final -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="UNIVERSIDAD TECNOLOGICA NACIONAL - FRGP"
+                android:textSize="13sp"
+                android:textColor="#526780"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

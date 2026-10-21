@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\quest\\OneDrive\\Escritorio\\repoTFI\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj": {}
+    "c:\\Users\\quest\\OneDrive\\Escritorio\\TFI2\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\quest\\OneDrive\\Escritorio\\repoTFI\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj": {
+    "c:\\Users\\quest\\OneDrive\\Escritorio\\TFI2\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\quest\\OneDrive\\Escritorio\\repoTFI\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj",
+        "projectUniqueName": "c:\\Users\\quest\\OneDrive\\Escritorio\\TFI2\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj",
         "projectName": "RutasInclusivasAPI",
-        "projectPath": "C:\\Users\\quest\\OneDrive\\Escritorio\\repoTFI\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj",
+        "projectPath": "c:\\Users\\quest\\OneDrive\\Escritorio\\TFI2\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj",
         "packagesPath": "C:\\Users\\quest\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\quest\\OneDrive\\Escritorio\\repoTFI\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\obj\\",
+        "outputPath": "c:\\Users\\quest\\OneDrive\\Escritorio\\TFI2\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

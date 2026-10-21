@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8FAFF"
+    android:padding="24dp">
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp">
+
+            <TextView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:gravity="center"
+                android:text="♿"
+                android:textSize="42sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/logo_background"
+                android:contentDescription="Símbolo de accesibilidad" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Iniciar sesión"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="#123B70"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Ingresá a tu cuenta para acceder a tus funciones."
+                android:textSize="16sp"
+                android:textColor="#526780"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Correo electrónico"
+                android:textStyle="bold"
+                android:textColor="#123B70"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etCorreo"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:hint="nombre@correo.com"
+                android:inputType="textEmailAddress"
+                android:autofillHints="emailAddress"
+                android:padding="14dp"
+                android:backgroundTint="#0866D9"
+                android:textColor="#123B70"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Contraseña"
+                android:textStyle="bold"
+                android:textColor="#123B70"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etContrasena"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:hint="Ingresá tu contraseña"
+                android:inputType="textPassword"
+                android:autofillHints="password"
+                android:padding="14dp"
+                android:backgroundTint="#0866D9"
+                android:textColor="#123B70"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btnIngresar"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="28dp"
+                android:text="Ingresar"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#0866D9" />
+
+            <Button
+                android:id="@+id/btnRecuperar"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:text="¿Olvidaste tu contraseña?"
+                android:textColor="#0755A6"
+                android:backgroundTint="#F8FAFF" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:background="#D8E3F0" />
+
+            <Button
+                android:id="@+id/btnIrRegistro"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="20dp"
+                android:text="Crear una cuenta"
+                android:textColor="#0755A6"
+                android:backgroundTint="#DCEBFF" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
