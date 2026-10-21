@@ -1,3 +1,50 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">Rutas Inclusivas</string>
+
+    <!-- Botones -->
+    <string name="ingresar">Ingresar</string>
+    <string name="ingresando">Ingresando…</string>
+    <string name="crear_cuenta">Crear una cuenta</string>
+    <string name="registrando">Creando cuenta…</string>
+    <string name="cerrar_sesion">Cerrar sesión</string>
+
+    <!-- Registro -->
+    <string name="registro_titulo">Crear cuenta</string>
+    <string name="registro_subtitulo">Registrate para reportar obstáculos y ayudar a otras personas.</string>
+    <string name="label_nombre_usuario">Nombre de usuario</string>
+    <string name="hint_nombre_usuario">Ej: maria_g</string>
+    <string name="label_correo">Correo electrónico</string>
+    <string name="hint_correo">nombre@correo.com</string>
+    <string name="label_contrasena">Contraseña</string>
+    <string name="hint_contrasena_nueva">Mínimo 8 caracteres</string>
+    <string name="label_confirmar_contrasena">Repetir contraseña</string>
+    <string name="hint_confirmar_contrasena">Volvé a escribir la contraseña</string>
+    <string name="label_zona">Zona o barrio</string>
+    <string name="hint_zona">Ej: General Pacheco</string>
+    <string name="ya_tengo_cuenta">Ya tengo una cuenta</string>
+    <string name="registro_exitoso">¡Cuenta creada! Ya podés iniciar sesión.</string>
+
+    <!-- Recuperar contraseña -->
+    <string name="recuperar_titulo">Recuperar contraseña</string>
+    <string name="recuperar_no_disponible">Esta función todavía no está disponible. Estamos trabajando en ella.</string>
+
+    <!-- Inicio -->
+    <string name="home_saludo">Hola, %1$s</string>
+    <string name="home_datos">%1$s · %2$s</string>
+    <string name="home_proximamente">Muy pronto vas a poder ver el mapa y reportar obstáculos desde acá.</string>
+
+    <!-- Errores de validación -->
+    <string name="error_campo_obligatorio">Este campo es obligatorio</string>
+    <string name="error_nombre_corto">El nombre debe tener al menos %1$d caracteres</string>
+    <string name="error_correo_invalido">Ingresá un correo válido</string>
+    <string name="error_contrasena_corta">La contraseña debe tener al menos %1$d caracteres</string>
+    <string name="error_contrasenas_distintas">Las contraseñas no coinciden</string>
+
+    <!-- Errores de red / servidor -->
+    <string name="error_sin_conexion">No se pudo conectar con el servidor. Revisá tu conexión e intentá de nuevo.</string>
+    <string name="error_credenciales">Correo o contraseña incorrectos</string>
+    <string name="error_usuario_existente">Ese correo o nombre de usuario ya está registrado</string>
+    <string name="error_datos_invalidos">Revisá los datos ingresados</string>
+    <string name="error_respuesta_invalida">Respuesta inesperada del servidor</string>
+    <string name="error_servidor">Ocurrió un error en el servidor. Intentá más tarde.</string>
 </resources>

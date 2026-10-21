@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/register"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8FAFF"
+    tools:context=".RegisterActivity">
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/registro_titulo"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="#123B70"
+                android:gravity="center"
+                android:accessibilityHeading="true" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/registro_subtitulo"
+                android:textSize="16sp"
+                android:textColor="#526780"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:labelFor="@id/etNombreUsuario"
+                android:text="@string/label_nombre_usuario"
+                android:textStyle="bold"
+                android:textColor="#123B70"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etNombreUsuario"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:hint="@string/hint_nombre_usuario"
+                android:inputType="textPersonName"
+                android:autofillHints="username"
+                android:maxLength="50"
+                android:maxLines="1"
+                android:padding="14dp"
+                android:backgroundTint="#0866D9"
+                android:textColor="#123B70"
+                android:textColorHint="#6B7F99"
+                android:textSize="16sp"
+                android:imeOptions="actionNext" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:labelFor="@id/etCorreoRegistro"
+                android:text="@string/label_correo"
+                android:textStyle="bold"
+                android:textColor="#123B70"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etCorreoRegistro"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:hint="@string/hint_correo"
+                android:inputType="textEmailAddress"
+                android:autofillHints="emailAddress"
+                android:maxLength="100"
+                android:maxLines="1"
+                android:padding="14dp"
+                android:backgroundTint="#0866D9"
+                android:textColor="#123B70"
+                android:textColorHint="#6B7F99"
+                android:textSize="16sp"
+                android:imeOptions="actionNext" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:labelFor="@id/etContrasenaRegistro"
+                android:text="@string/label_contrasena"
+                android:textStyle="bold"
+                android:textColor="#123B70"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etContrasenaRegistro"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:hint="@string/hint_contrasena_nueva"
+                android:inputType="textPassword"
+                android:autofillHints="newPassword"
+                android:maxLength="72"
+                android:maxLines="1"
+                android:padding="14dp"
+                android:backgroundTint="#0866D9"
+                android:textColor="#123B70"
+                android:textColorHint="#6B7F99"
+                android:textSize="16sp"
+                android:imeOptions="actionNext" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:labelFor="@id/etConfirmarContrasena"
+                android:text="@string/label_confirmar_contrasena"
+                android:textStyle="bold"
+                android:textColor="#123B70"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etConfirmarContrasena"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:hint="@string/hint_confirmar_contrasena"
+                android:inputType="textPassword"
+                android:autofillHints="newPassword"
+                android:maxLength="72"
+                android:maxLines="1"
+                android:padding="14dp"
+                android:backgroundTint="#0866D9"
+                android:textColor="#123B70"
+                android:textColorHint="#6B7F99"
+                android:textSize="16sp"
+                android:imeOptions="actionNext" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:labelFor="@id/etZona"
+                android:text="@string/label_zona"
+                android:textStyle="bold"
+                android:textColor="#123B70"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etZona"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:hint="@string/hint_zona"
+                android:inputType="textCapWords"
+                android:autofillHints="postalAddress"
+                android:maxLength="100"
+                android:maxLines="1"
+                android:padding="14dp"
+                android:backgroundTint="#0866D9"
+                android:textColor="#123B70"
+                android:textColorHint="#6B7F99"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btnRegistrar"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="28dp"
+                android:text="@string/crear_cuenta"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#0866D9" />
+
+            <Button
+                android:id="@+id/btnYaTengoCuenta"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/ya_tengo_cuenta"
+                android:textColor="#0755A6"
+                android:backgroundTint="#DCEBFF" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

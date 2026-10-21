@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/home"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:background="#F8FAFF"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    tools:context=".HomeActivity">
+
+    <TextView
+        android:id="@+id/tvSaludo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:gravity="center"
+        android:textColor="#123B70"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:accessibilityHeading="true"
+        tools:text="Hola, maria_g" />
+
+    <TextView
+        android:id="@+id/tvDatos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:textColor="#526780"
+        android:textSize="16sp"
+        tools:text="maria@correo.com · General Pacheco" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:padding="16dp"
+        android:background="#E7F2FF"
+        android:gravity="center"
+        android:text="@string/home_proximamente"
+        android:textColor="#334155"
+        android:textSize="15sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/btnCerrarSesion"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginBottom="24dp"
+        android:text="@string/cerrar_sesion"
+        android:textColor="#0755A6"
+        android:backgroundTint="#DCEBFF" />
+
+</LinearLayout>

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RutasInclusivasAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+695dd7273d59208c6c3e613c8affe1ade1e6733d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+03a378586134350ac46631f648620b84e2a62eb7")]
 [assembly: System.Reflection.AssemblyProductAttribute("RutasInclusivasAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RutasInclusivasAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

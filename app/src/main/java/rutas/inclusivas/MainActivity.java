@@ -2,6 +2,7 @@ package rutas.inclusivas;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,13 +10,17 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import android.widget.Button;
-
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Si ya hay una sesión vigente, se salta la bienvenida.
+        if (new SessionManager(this).haySesionValida()) {
+            irAInicio();
+            return;
+        }
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
@@ -38,20 +43,18 @@ public class MainActivity extends AppCompatActivity {
         Button btnComenzar = findViewById(R.id.btnComenzar);
         Button btnIniciarSesion = findViewById(R.id.btnIniciarSesion);
 
-        btnComenzar.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    MainActivity.this,
-                    LoginActivity.class
-            );
-            startActivity(intent);
-        });
+        // "Comenzar" = usuario nuevo -> registro
+        btnComenzar.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, RegisterActivity.class)));
 
-        btnIniciarSesion.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    MainActivity.this,
-                    LoginActivity.class
-            );
-            startActivity(intent);
-        });
+        // "Ya tengo una cuenta" -> login
+        btnIniciarSesion.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, LoginActivity.class)));
+    }
+
+    private void irAInicio() {
+        Intent intent = new Intent(this, HomeActivity.class);
+        startActivity(intent);
+        finish();
     }
 }
