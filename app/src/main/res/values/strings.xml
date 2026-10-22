@@ -25,8 +25,12 @@
     <string name="registro_exitoso">¡Cuenta creada! Ya podés iniciar sesión.</string>
 
     <!-- Recuperar contraseña -->
+    <!-- Recuperar contraseña -->
     <string name="recuperar_titulo">Recuperar contraseña</string>
     <string name="recuperar_no_disponible">Esta función todavía no está disponible. Estamos trabajando en ella.</string>
+    <string name="recuperar_instruccion">Ingresá tu correo para recuperar la contraseña:</string>
+    <string name="recuperar_aceptar">Aceptar</string>
+    <string name="recuperar_cancelar">Cancelar</string>
 
     <!-- Inicio -->
     <string name="home_saludo">Hola, %1$s</string>

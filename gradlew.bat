@@ -17,6 +17,7 @@
 @rem
 
 @if "%DEBUG%"=="" @echo off
+set ANDROID_PREFS_ROOT=
 @rem ##########################################################################
 @rem
 @rem  Gradle startup script for Windows
