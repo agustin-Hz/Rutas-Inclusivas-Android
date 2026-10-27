@@ -198,5 +198,68 @@ namespace RutasInclusivasAPI.Controllers
                 });
             }
         }
+
+        [HttpDelete("{id:int}")]
+        [Authorize]
+        public async Task<IActionResult> EliminarReporte(int id)
+        {
+            string? idTexto = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+            if (!int.TryParse(idTexto, out int idUsuario))
+            {
+                return Unauthorized(new
+                {
+                    mensaje = "Usuario no identificado"
+                });
+            }
+
+            if (id <= 0)
+            {
+                return BadRequest(new
+                {
+                    mensaje = "El ID del reporte debe ser válido"
+                });
+            }
+
+            try
+            {
+                using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
+                {
+                    await conexion.OpenAsync();
+
+                    string query = @"UPDATE REPORTES
+                                    SET Estado = 'Eliminado'
+                                    WHERE ID_Reporte = @IdReporte AND ID_Usuario = @IdUsuario AND Estado = 'Activo'";
+
+                    using (MySqlCommand comando = new MySqlCommand(query, conexion))
+                    {
+                        comando.Parameters.AddWithValue("@IdReporte", id);
+                        comando.Parameters.AddWithValue("@IdUsuario", idUsuario);
+
+                        int filas = await comando.ExecuteNonQueryAsync();
+
+                        if (filas == 0)
+                        {
+                            return NotFound(new
+                            {
+                                mensaje = "Reporte no encontrado, no activo o no pertenece al usuario"
+                            });
+                        }
+
+                        return Ok(new
+                        {
+                            mensaje = "Reporte dado de baja correctamente"
+                        });
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new
+                {
+                    mensaje = "Error al dar de baja el reporte"
+                });
+            }
+        }
     }
 }
