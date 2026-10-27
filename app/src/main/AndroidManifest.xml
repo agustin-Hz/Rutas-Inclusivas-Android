@@ -32,6 +32,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ForgotPasswordActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".HomeActivity"
             android:exported="false" />
 
