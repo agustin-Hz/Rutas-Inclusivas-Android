@@ -55,6 +55,16 @@
         android:textStyle="bold"
         android:backgroundTint="#0866D9" />
 
+    <Button
+        android:id="@+id/btnReportar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="12dp"
+        android:text="Reportar obstáculo"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:backgroundTint="#2E7D32" />
+
     <View
         android:layout_width="match_parent"
         android:layout_height="0dp"

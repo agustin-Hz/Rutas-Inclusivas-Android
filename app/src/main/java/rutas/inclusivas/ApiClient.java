@@ -58,13 +58,17 @@ public final class ApiClient {
     }
 
     public static void post(String path, JSONObject json, Callback callback) {
+        post(path, json, null, callback);
+    }
+
+    public static void post(String path, JSONObject json, String token, Callback callback) {
         EXECUTOR.execute(() -> {
-            Response response = ejecutarPost(path, json);
+            Response response = ejecutarPost(path, json, token);
             MAIN.post(() -> callback.onResult(response));
         });
     }
 
-    private static Response ejecutarPost(String path, JSONObject json) {
+    private static Response ejecutarPost(String path, JSONObject json, String token) {
         HttpURLConnection conexion = null;
         try {
             conexion = (HttpURLConnection) new URL(BASE_URL + path).openConnection();
@@ -74,6 +78,9 @@ public final class ApiClient {
             conexion.setDoOutput(true);
             conexion.setRequestProperty("Content-Type", "application/json; charset=utf-8");
             conexion.setRequestProperty("Accept", "application/json");
+            if (token != null && !token.trim().isEmpty()) {
+                conexion.setRequestProperty("Authorization", "Bearer " + token);
+            }
 
             byte[] datos = json.toString().getBytes(StandardCharsets.UTF_8);
             try (OutputStream salida = conexion.getOutputStream()) {

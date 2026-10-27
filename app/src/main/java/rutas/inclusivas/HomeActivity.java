@@ -53,9 +53,47 @@ public class HomeActivity extends BaseActivity {
                 ? sesion.getCorreo()
                 : getString(R.string.home_datos, sesion.getCorreo(), zona));
 
+        // Botón para Reportar Obstáculo (Etapa 3)
+        Button btnReportar = findViewById(R.id.btnReportar);
+        if (btnReportar != null) {
+            btnReportar.setOnClickListener(v -> mostrarDialogoReportar(sesion));
+        }
+
         btnCerrar.setOnClickListener(v -> {
             sesion.cerrarSesion();
             irAlLogin();
+        });
+    }
+
+    private void mostrarDialogoReportar(SessionManager sesion) {
+        final android.widget.EditText input = new android.widget.EditText(this);
+        input.setHint("Ej: Rampa rota o bloqueada");
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Reportar Obstáculo")
+                .setMessage("Ingresá la descripción del obstáculo:")
+                .setView(input)
+                .setPositiveButton("Enviar", (dialog, which) -> {
+                    String desc = input.getText().toString().trim();
+                    if (!desc.isEmpty()) enviarReporteApi(sesion, desc);
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void enviarReporteApi(SessionManager sesion, String desc) {
+        org.json.JSONObject json = new org.json.JSONObject();
+        try {
+            json.put("ID_Tipo", 1);
+            json.put("Descripcion", desc);
+            json.put("Latitud", -34.45612);
+            json.put("Longitud", -58.65432);
+        } catch (org.json.JSONException ignored) {}
+
+        ApiClient.post("api/Reportes", json, sesion.getToken(), resp -> {
+            if (isFinishing() || isDestroyed()) return;
+            String msj = resp.isSuccess() ? "¡Reporte enviado exitosamente!" : "Error al enviar el reporte";
+            android.widget.Toast.makeText(this, msj, android.widget.Toast.LENGTH_SHORT).show();
         });
     }
 
