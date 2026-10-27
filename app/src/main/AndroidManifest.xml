@@ -3,6 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Necesario desde Android 11 para que TextToSpeech encuentre el motor de voz -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="true"
@@ -25,6 +33,10 @@
 
         <activity
             android:name=".HomeActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AccesibilidadActivity"
             android:exported="false" />
 
         <activity

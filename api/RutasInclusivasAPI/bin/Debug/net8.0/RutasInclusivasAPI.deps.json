@@ -9,7 +9,7 @@
       "RutasInclusivasAPI/1.0.0": {
         "dependencies": {
           "BCrypt.Net-Next": "4.2.0",
-          "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.32",
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.33",
           "MySqlConnector": "2.6.2",
           "Swashbuckle.AspNetCore": "6.6.2"
         },
@@ -25,14 +25,14 @@
           }
         }
       },
-      "Microsoft.AspNetCore.Authentication.JwtBearer/8.0.32": {
+      "Microsoft.AspNetCore.Authentication.JwtBearer/8.0.33": {
         "dependencies": {
           "Microsoft.IdentityModel.Protocols.OpenIdConnect": "7.7.3"
         },
         "runtime": {
           "lib/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll": {
-            "assemblyVersion": "8.0.32.0",
-            "fileVersion": "8.0.3226.50505"
+            "assemblyVersion": "8.0.33.0",
+            "fileVersion": "8.0.3326.52312"
           }
         }
       },
@@ -205,12 +205,12 @@
       "path": "bcrypt.net-next/4.2.0",
       "hashPath": "bcrypt.net-next.4.2.0.nupkg.sha512"
     },
-    "Microsoft.AspNetCore.Authentication.JwtBearer/8.0.32": {
+    "Microsoft.AspNetCore.Authentication.JwtBearer/8.0.33": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-BrL4xE4byyDVL9+gfhK48aK2MwsFSDV5/OwLn2jc6lkb5aYiAAO69ueK23Q9+G+qQm8HNagzt6o+3MHremFSFg==",
-      "path": "microsoft.aspnetcore.authentication.jwtbearer/8.0.32",
-      "hashPath": "microsoft.aspnetcore.authentication.jwtbearer.8.0.32.nupkg.sha512"
+      "sha512": "sha512-Hwq3HqpQD3Y3wLI0TX8o+KYDxbyYR7w5pUKx+Va2MtfgQ9rwh3RzH/dtiwPkmUPfTaT7a5771pmL9X1kqfWD5g==",
+      "path": "microsoft.aspnetcore.authentication.jwtbearer/8.0.33",
+      "hashPath": "microsoft.aspnetcore.authentication.jwtbearer.8.0.33.nupkg.sha512"
     },
     "Microsoft.Extensions.ApiDescription.Server/6.0.5": {
       "type": "package",

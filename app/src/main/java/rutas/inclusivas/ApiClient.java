@@ -28,6 +28,7 @@ public final class ApiClient {
     // y levantar la API escuchando en esa IP.
     public static final String BASE_URL = "http://10.0.2.2:5126/";
 
+
     private static final int TIMEOUT_MS = 10_000;
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(2);
     private static final Handler MAIN = new Handler(Looper.getMainLooper());

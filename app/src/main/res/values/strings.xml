@@ -8,6 +8,20 @@
     <string name="registrando">Creando cuenta…</string>
     <string name="cerrar_sesion">Cerrar sesión</string>
 
+    <!-- Login -->
+    <string name="login_titulo">Iniciar sesión</string>
+    <string name="login_subtitulo">Ingresá a tu cuenta para acceder a tus funciones.</string>
+    <string name="hint_contrasena_login">Ingresá tu contraseña</string>
+    <string name="recuperar_boton">¿Olvidaste tu contraseña?</string>
+
+    <!-- Bienvenida -->
+    <string name="desc_logo">Símbolo de accesibilidad</string>
+    <string name="desc_ilustracion">Ilustración de una ciudad con espacios accesibles</string>
+    <string name="main_subtitulo">Mapa colaborativo de\naccesibilidad urbana</string>
+    <string name="main_descripcion">Juntos construimos una ciudad más accesible. Reportá obstáculos, consultá rutas y ayudá a que todos puedan llegar.</string>
+    <string name="comenzar">Comenzar</string>
+    <string name="pie_universidad">UNIVERSIDAD TECNOLÓGICA NACIONAL - FRGP</string>
+
     <!-- Registro -->
     <string name="registro_titulo">Crear cuenta</string>
     <string name="registro_subtitulo">Registrate para reportar obstáculos y ayudar a otras personas.</string>
@@ -36,6 +50,37 @@
     <string name="home_saludo">Hola, %1$s</string>
     <string name="home_datos">%1$s · %2$s</string>
     <string name="home_proximamente">Muy pronto vas a poder ver el mapa y reportar obstáculos desde acá.</string>
+
+    <!-- Configuración de accesibilidad -->
+    <string name="acc_titulo">Configuración de accesibilidad</string>
+    <string name="acc_subtitulo">Personalizá la aplicación según tus necesidades.</string>
+    <string name="acc_voz_titulo">Navegación por voz</string>
+    <string name="acc_voz_detalle">Indicaciones y comandos por voz</string>
+    <string name="acc_vibracion_titulo">Vibración</string>
+    <string name="acc_vibracion_detalle">Alertas y notificaciones hápticas</string>
+    <string name="acc_lector_titulo">Lector de pantalla</string>
+    <string name="acc_lector_detalle">Compatibilidad con TalkBack</string>
+    <string name="acc_texto_titulo">Tamaño de texto</string>
+    <string name="acc_texto_detalle">Ajustá el tamaño de la letra</string>
+    <string name="acc_contraste_titulo">Contraste</string>
+    <string name="acc_contraste_detalle">Mejorá la visibilidad de la pantalla</string>
+    <string name="acc_continuar">Continuar</string>
+    <string name="acc_volver">Volver</string>
+    <string name="acc_rol_interruptor">Interruptor</string>
+    <string name="acc_estado_activado">Activado</string>
+    <string name="acc_estado_desactivado">Desactivado</string>
+    <string name="acc_voz_activada">Navegación por voz activada</string>
+    <string name="acc_voz_desactivada">Navegación por voz desactivada</string>
+    <string name="acc_voz_error">No se pudo iniciar la voz en este dispositivo</string>
+    <string name="acc_talkback_titulo">TalkBack está desactivado</string>
+    <string name="acc_talkback_mensaje">Para usar el lector de pantalla, activá TalkBack en los ajustes de accesibilidad del teléfono.</string>
+    <string name="acc_abrir_ajustes">Abrir ajustes</string>
+    <string name="acc_ahora_no">Ahora no</string>
+    <string name="acc_texto_normal">Normal</string>
+    <string name="acc_texto_grande">Grande</string>
+    <string name="acc_texto_muy_grande">Muy grande</string>
+    <string name="acc_contraste_estandar">Estándar</string>
+    <string name="acc_contraste_proximamente">El modo de alto contraste estará disponible próximamente.</string>
 
     <!-- Errores de validación -->
     <string name="error_campo_obligatorio">Este campo es obligatorio</string>

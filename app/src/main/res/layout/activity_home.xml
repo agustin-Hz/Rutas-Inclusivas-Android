@@ -45,6 +45,16 @@
         android:textColor="#334155"
         android:textSize="15sp" />
 
+    <Button
+        android:id="@+id/btnAccesibilidad"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/acc_titulo"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:backgroundTint="#0866D9" />
+
     <View
         android:layout_width="match_parent"
         android:layout_height="0dp"
