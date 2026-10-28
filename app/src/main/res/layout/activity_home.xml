@@ -7,19 +7,21 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center_horizontal"
-    android:background="#F8FAFF"
-    android:paddingStart="24dp"
-    android:paddingEnd="24dp"
+    android:background="#F4F7FC"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="12dp"
     tools:context=".HomeActivity">
+
 
     <TextView
         android:id="@+id/tvSaludo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="16dp"
         android:gravity="center"
         android:textColor="#123B70"
-        android:textSize="28sp"
+        android:textSize="27sp"
         android:textStyle="bold"
         android:accessibilityHeading="true"
         tools:text="Hola, maria_g" />
@@ -28,55 +30,103 @@
         android:id="@+id/tvDatos"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="6dp"
         android:gravity="center"
         android:textColor="#526780"
-        android:textSize="16sp"
+        android:textSize="14sp"
         tools:text="maria@correo.com · General Pacheco" />
 
-    <TextView
+    <!-- Título de la sección del mapa -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:padding="16dp"
-        android:background="#E7F2FF"
-        android:gravity="center"
-        android:text="@string/home_proximamente"
-        android:textColor="#334155"
-        android:textSize="15sp" />
+        android:layout_marginTop="20dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mapa de accesibilidad"
+            android:textColor="#123B70"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Explorá tu entorno y encontrá obstáculos urbanos"
+            android:textColor="#64748B"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
+    <!-- Agregue esta tarjeta que es donde va a estar contenido el mapa -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="12dp"
+        android:minHeight="180dp"
+        android:background="@drawable/bg_mapa_card"
+        android:clipToOutline="true"
+        android:elevation="3dp">
+
+        <!-- Esta es la vista del mapa -->
+        <org.osmdroid.views.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:layout_margin="12dp"
+            android:background="#FFFFFF"
+            android:elevation="4dp"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="8dp"
+            android:text="Explorar mapa"
+            android:textColor="#123B70"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+    </FrameLayout>
+
 
     <Button
         android:id="@+id/btnAccesibilidad"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="16dp"
+        android:layout_height="52dp"
+        android:layout_marginBottom="10dp"
         android:text="@string/acc_titulo"
         android:textColor="#FFFFFF"
+        android:textSize="14sp"
         android:textStyle="bold"
         android:backgroundTint="#0866D9" />
 
     <Button
         android:id="@+id/btnReportar"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="12dp"
+        android:layout_height="52dp"
+        android:layout_marginBottom="10dp"
         android:text="Reportar obstáculo"
         android:textColor="#FFFFFF"
+        android:textSize="14sp"
         android:textStyle="bold"
-        android:backgroundTint="#2E7D32" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:backgroundTint="#24834A" />
 
     <Button
         android:id="@+id/btnCerrarSesion"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginBottom="24dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="12dp"
         android:text="@string/cerrar_sesion"
         android:textColor="#0755A6"
+        android:textSize="14sp"
         android:backgroundTint="#DCEBFF" />
 
 </LinearLayout>

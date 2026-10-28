@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- Necesario desde Android 11 para que TextToSpeech encuentre el motor de voz -->
@@ -35,9 +36,7 @@
             android:name=".ForgotPasswordActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".HomeActivity"
-            android:exported="false" />
+
 
         <activity
             android:name=".AccesibilidadActivity"
@@ -45,6 +44,13 @@
 
         <activity
             android:name=".MainActivity"
+            android:exported="false">
+
+        </activity>
+
+
+        <activity
+            android:name=".HomeActivity"
             android:exported="true">
 
             <intent-filter>
