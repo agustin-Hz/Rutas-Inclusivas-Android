@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\quest\\OneDrive\\Escritorio\\RepoTFI2\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj": {}
+    "C:\\Users\\Usuario\\Desktop\\UTN\\TPI-FINAL-G39\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\quest\\OneDrive\\Escritorio\\RepoTFI2\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj": {
+    "C:\\Users\\Usuario\\Desktop\\UTN\\TPI-FINAL-G39\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\quest\\OneDrive\\Escritorio\\RepoTFI2\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj",
+        "projectUniqueName": "C:\\Users\\Usuario\\Desktop\\UTN\\TPI-FINAL-G39\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj",
         "projectName": "RutasInclusivasAPI",
-        "projectPath": "C:\\Users\\quest\\OneDrive\\Escritorio\\RepoTFI2\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj",
-        "packagesPath": "C:\\Users\\quest\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\quest\\OneDrive\\Escritorio\\RepoTFI2\\Rutas-Inclusivas-Android\\api\\RutasInclusivasAPI\\obj\\",
+        "projectPath": "C:\\Users\\Usuario\\Desktop\\UTN\\TPI-FINAL-G39\\api\\RutasInclusivasAPI\\RutasInclusivasAPI.csproj",
+        "packagesPath": "C:\\Users\\Usuario\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Usuario\\Desktop\\UTN\\TPI-FINAL-G39\\api\\RutasInclusivasAPI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\quest\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Usuario\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -44,7 +44,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -86,7 +86,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

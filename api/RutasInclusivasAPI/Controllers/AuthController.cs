@@ -1,6 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Net;           // Nuevo: Necesario para NetworkCredential
+using System.Net.Mail;      // Nuevo: Necesario para SmtpClient y MailMessage
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MySqlConnector;
@@ -91,6 +93,69 @@ namespace RutasInclusivasAPI.Controllers
             {
                 _logger.LogError(ex, "Error al iniciar sesión");
                 return StatusCode(500, new { error = "Error al iniciar sesión" });
+            }
+        }
+
+        // RECUPERAR CONTRASEÑA - POST api/Auth/recuperar
+        [HttpPost("recuperar")]
+        public async Task<IActionResult> Recuperar([FromBody] RecuperarRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Correo))
+            {
+                return BadRequest(new { mensaje = "El correo es obligatorio." });
+            }
+
+            string pin = new Random().Next(100000, 999999).ToString();
+            DateTime expiraEn = DateTime.Now.AddMinutes(15);
+            int filasAfectadas = 0;
+
+            try
+            {
+                using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
+                {
+                    await conexion.OpenAsync();
+
+                    // Solo actualizamos si el usuario existe y está activo
+                    string query = @"UPDATE USUARIOS 
+                                     SET PinRecuperacion = @Pin, PinExpiraEn = @Expira 
+                                     WHERE Correo = @Correo AND Activo = TRUE";
+
+                    using (MySqlCommand comando = new MySqlCommand(query, conexion))
+                    {
+                        comando.Parameters.AddWithValue("@Pin", pin);
+                        comando.Parameters.AddWithValue("@Expira", expiraEn);
+                        comando.Parameters.AddWithValue("@Correo", request.Correo.Trim());
+
+                        filasAfectadas = await comando.ExecuteNonQueryAsync();
+                    }
+                }
+
+                if (filasAfectadas == 0)
+                {
+                    return NotFound(new { mensaje = "Correo no encontrado." });
+                }
+
+                // ------------------------------------------------- Configuración para el envío del correo de MAILTRAP.COM ----------------------------
+                using var smtp = new SmtpClient("sandbox.smtp.mailtrap.io", 587)
+                {
+                    Credentials = new NetworkCredential("879bc299e73a59", "eb526a888085cc"),
+                    EnableSsl = true
+                };
+
+                var mail = new MailMessage("tu_correo@gmail.com", request.Correo)
+                {
+                    Subject = "Recuperación de contraseña - Rutas Inclusivas",
+                    Body = $"Tu código de recuperación es: {pin}\nEste código expira en 15 minutos."
+                };
+
+                await smtp.SendMailAsync(mail); // Enviamos el correo de forma asíncrona
+
+                return Ok(new { mensaje = "Instrucciones enviadas" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al recuperar contraseña");
+                return StatusCode(500, new { error = "Error en el servidor", detalle = ex.Message });
             }
         }
 

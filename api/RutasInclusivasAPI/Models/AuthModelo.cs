@@ -11,4 +11,9 @@ namespace RutasInclusivasAPI.Models
         [Required]
         public string Contrasena { get; set; } = string.Empty;
     }
+    public class RecuperarRequest
+    {
+        [Required]
+        public string Correo { get; set; } = string.Empty;
+    }
 }

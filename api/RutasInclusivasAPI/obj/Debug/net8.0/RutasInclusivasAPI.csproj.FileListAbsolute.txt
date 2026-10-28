@@ -179,3 +179,12 @@ C:\Users\quest\OneDrive\Escritorio\RepoTFI2\Rutas-Inclusivas-Android\api\RutasIn
 C:\Users\quest\OneDrive\Escritorio\RepoTFI2\Rutas-Inclusivas-Android\api\RutasInclusivasAPI\obj\Debug\net8.0\RutasInclusivasAPI.pdb
 C:\Users\quest\OneDrive\Escritorio\RepoTFI2\Rutas-Inclusivas-Android\api\RutasInclusivasAPI\obj\Debug\net8.0\RutasInclusivasAPI.genruntimeconfig.cache
 C:\Users\quest\OneDrive\Escritorio\RepoTFI2\Rutas-Inclusivas-Android\api\RutasInclusivasAPI\obj\Debug\net8.0\ref\RutasInclusivasAPI.dll
+C:\Users\Usuario\Desktop\UTN\TPI-FINAL-G39\api\RutasInclusivasAPI\bin\Debug\net8.0\BCrypt-Net-Next.dll
+C:\Users\Usuario\Desktop\UTN\TPI-FINAL-G39\api\RutasInclusivasAPI\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Usuario\Desktop\UTN\TPI-FINAL-G39\api\RutasInclusivasAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\Usuario\Desktop\UTN\TPI-FINAL-G39\api\RutasInclusivasAPI\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\Usuario\Desktop\UTN\TPI-FINAL-G39\api\RutasInclusivasAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\Usuario\Desktop\UTN\TPI-FINAL-G39\api\RutasInclusivasAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\Usuario\Desktop\UTN\TPI-FINAL-G39\api\RutasInclusivasAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\Usuario\Desktop\UTN\TPI-FINAL-G39\api\RutasInclusivasAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\Usuario\Desktop\UTN\TPI-FINAL-G39\api\RutasInclusivasAPI\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
