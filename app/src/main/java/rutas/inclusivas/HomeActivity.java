@@ -10,8 +10,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-/** Pantalla provisoria post-login. Acá va a ir el mapa de reportes. */
+/** Importo lo nececario para OSMDroid. */
+
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.api.IMapController;
+import org.osmdroid.views.overlay.Marker;
+
 public class HomeActivity extends BaseActivity {
+
+    private MapView mapView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +33,7 @@ public class HomeActivity extends BaseActivity {
             return;
         }
 
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
 
@@ -31,6 +42,8 @@ public class HomeActivity extends BaseActivity {
             v.setPadding(barras.left, barras.top, barras.right, barras.bottom);
             return insets;
         });
+
+        inicializarMapa();
 
         TextView tvSaludo = findViewById(R.id.tvSaludo);
         TextView tvDatos = findViewById(R.id.tvDatos);
@@ -53,6 +66,7 @@ public class HomeActivity extends BaseActivity {
                 ? sesion.getCorreo()
                 : getString(R.string.home_datos, sesion.getCorreo(), zona));
 
+
         // Botón para Reportar Obstáculo (Etapa 3)
         Button btnReportar = findViewById(R.id.btnReportar);
         if (btnReportar != null) {
@@ -65,6 +79,71 @@ public class HomeActivity extends BaseActivity {
         });
     }
 
+    private void inicializarMapa() {
+
+        // Cargar la configuración de OSMDroid.
+        Configuration.getInstance().load(
+                getApplicationContext(),
+                getSharedPreferences("osmdroid", MODE_PRIVATE));
+
+        Configuration.getInstance()
+                .setUserAgentValue(getPackageName());
+
+        // Obtener el mapa del XML de la pantalla principal.
+        mapView = findViewById(R.id.mapView);
+
+        // Configurar el mapa de calles.
+        mapView.setTileSource(TileSourceFactory.MAPNIK);
+
+        // Permitir zoom con los dedos.
+        mapView.setMultiTouchControls(true);
+
+        // Obtener el controlador del mapa.
+        IMapController controlador = mapView.getController();
+
+        // Definir la ubicación inicial.
+        GeoPoint ubicacionInicial =
+                new GeoPoint(-34.6037, -58.3816);
+
+        // Establecer el nivel de zoom.
+        controlador.setZoom(15.0);
+
+        // Centrar el mapa.
+        controlador.setCenter(ubicacionInicial);
+
+        // Crear un marcador.
+        Marker marcador = new Marker(mapView);
+
+        // Establecer la posición del marcador.
+        marcador.setPosition(ubicacionInicial);
+
+        // Texto que aparecerá al tocar el marcador.
+        marcador.setTitle("Ciudad de Buenos Aires");
+
+        // Agregar el marcador al mapa.
+        mapView.getOverlays().add(marcador);
+
+        // Redibujar el mapa.
+        mapView.invalidate();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (mapView != null) {
+            mapView.onResume();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (mapView != null) {
+            mapView.onPause();
+        }
+
+        super.onPause();
+    }
     private void mostrarDialogoReportar(SessionManager sesion) {
         final android.widget.EditText input = new android.widget.EditText(this);
         input.setHint("Ej: Rampa rota o bloqueada");
