@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/buscarDestinoRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F4F7FC"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Encabezado -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="‹   Buscar destino"
+            android:textColor="#123B70"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            android:paddingBottom="22dp"
+            android:contentDescription="Volver. Buscar destino" />
+
+        <!-- Instrucción -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="¿A dónde querés ir?"
+            android:textColor="#123B70"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:paddingBottom="10dp" />
+
+        <!-- Campo de búsqueda -->
+        <EditText
+            android:id="@+id/etDestino"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:background="@android:drawable/edit_text"
+            android:hint="Ingresá una dirección o lugar"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:singleLine="true"
+            android:inputType="textPostalAddress"
+            android:imeOptions="actionSearch"
+            android:textSize="15sp" />
+
+        <!-- Ubicación actual -->
+        <Button
+            android:id="@+id/btnMiUbicacion"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="20dp"
+            android:text="📍  Mi ubicación"
+            android:textColor="#123B70"
+            android:backgroundTint="#E3EEFC"
+            android:gravity="start|center_vertical"
+            android:paddingStart="16dp" />
+
+        <!-- Casa -->
+        <Button
+            android:id="@+id/btnCasa"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="8dp"
+            android:text="⌂  Casa"
+            android:textColor="#123B70"
+            android:backgroundTint="#E3EEFC"
+            android:gravity="start|center_vertical"
+            android:paddingStart="16dp" />
+
+        <!-- Trabajo -->
+        <Button
+            android:id="@+id/btnTrabajo"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="8dp"
+            android:text="▣  Trabajo"
+            android:textColor="#123B70"
+            android:backgroundTint="#E3EEFC"
+            android:gravity="start|center_vertical"
+            android:paddingStart="16dp" />
+
+        <!-- Puntos de interés -->
+        <Button
+            android:id="@+id/btnPuntosInteres"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="8dp"
+            android:text="★  Puntos de interés"
+            android:textColor="#123B70"
+            android:backgroundTint="#E3EEFC"
+            android:gravity="start|center_vertical"
+            android:paddingStart="16dp" />
+
+        <!-- Alternativas -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:paddingBottom="8dp"
+            android:text="También podés:"
+            android:textColor="#123B70"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnSeleccionarMapa"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Seleccionar en el mapa"
+            android:textColor="#0755A6"
+            android:backgroundTint="#FFFFFF" />
+
+        <Button
+            android:id="@+id/btnUsarVoz"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="8dp"
+            android:text="🎙  Usar voz"
+            android:textColor="#0755A6"
+            android:backgroundTint="#FFFFFF" />
+
+        <!-- Continuar -->
+        <Button
+            android:id="@+id/btnCompararRutas"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="24dp"
+            android:text="Comparar rutas accesibles"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:backgroundTint="#0866D9" />
+
+    </LinearLayout>
+
+</ScrollView>

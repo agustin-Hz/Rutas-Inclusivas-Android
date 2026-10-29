@@ -97,28 +97,111 @@
     </FrameLayout>
 
 
-    <Button
-        android:id="@+id/btnAccesibilidad"
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:layout_marginBottom="10dp"
-        android:text="@string/acc_titulo"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:backgroundTint="#0866D9" />
 
-    <Button
-        android:id="@+id/btnReportar"
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:layout_marginBottom="10dp"
-        android:text="Reportar obstáculo"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:backgroundTint="#24834A" />
 
+    <!-- Accesos rápidos del Home -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp">
+
+        <!-- Buscar destino -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnBuscarDestinoHome"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_icon_circle"
+                android:src="@drawable/ic_buscar_destino"
+                android:scaleType="centerInside"
+                android:padding="16dp"
+                android:contentDescription="Buscar destino"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:text="Buscar destino"
+                android:textColor="#123B70"
+                android:textStyle="bold"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Reportar obstáculo -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnReportarHome"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_icon_circle"
+                android:src="@drawable/ic_reportar_obstaculo"
+                android:scaleType="centerInside"
+                android:padding="16dp"
+                android:contentDescription="Reportar obstáculo"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:text="Reportar obstáculo"
+                android:textColor="#123B70"
+                android:textStyle="bold"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Configurar accesibilidad -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnAccesibilidadHome"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_icon_circle"
+                android:src="@drawable/ic_accesibilidad_home"
+                android:scaleType="centerInside"
+                android:padding="16dp"
+                android:contentDescription="Configurar accesibilidad"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:text="Accesibilidad"
+                android:textColor="#123B70"
+                android:textStyle="bold"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+    </LinearLayout>
     <Button
         android:id="@+id/btnCerrarSesion"
         android:layout_width="match_parent"
@@ -128,5 +211,8 @@
         android:textColor="#0755A6"
         android:textSize="14sp"
         android:backgroundTint="#DCEBFF" />
+
+
+
 
 </LinearLayout>

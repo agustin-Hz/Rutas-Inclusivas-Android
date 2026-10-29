@@ -63,7 +63,8 @@ public class LoginActivity extends BaseActivity {
         });
 
         btnIngresar.setOnClickListener(v -> intentarLogin());
-        btnRecuperar.setOnClickListener(v -> mostrarRecuperarNoDisponible());
+        btnRecuperar.setOnClickListener(v ->
+                startActivity(new Intent(this, ForgotPasswordActivity.class)));
         btnIrRegistro.setOnClickListener(v ->
                 startActivity(new Intent(this, RegisterActivity.class)));
     }
@@ -145,15 +146,6 @@ public class LoginActivity extends BaseActivity {
         } catch (JSONException e) {
             return false;
         }
-    }
-
-    private void mostrarRecuperarNoDisponible() {
-        // La API todavía no tiene un endpoint de recuperación de contraseña.
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.recuperar_titulo)
-                .setMessage(R.string.recuperar_no_disponible)
-                .setPositiveButton(android.R.string.ok, null)
-                .show();
     }
 
     private void setCargando(boolean cargando) {

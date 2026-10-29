@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/compararRutasRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F4F7FC"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <!-- Encabezado -->
+        <TextView
+            android:id="@+id/tvTituloRutas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="‹   Rutas disponibles"
+            android:textColor="#123B70"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            android:paddingBottom="18dp" />
+
+        <!-- Origen -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Desde:"
+            android:textColor="#53657D"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvOrigen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mi ubicación"
+            android:textColor="#123B70"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingBottom="10dp" />
+
+        <!-- Destino -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hasta:"
+            android:textColor="#53657D"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvDestino"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Destino seleccionado"
+            android:textColor="#123B70"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingBottom="18dp" />
+
+        <!-- Filtros -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="18dp">
+
+            <Button
+                android:id="@+id/btnTodasLasRutas"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="5dp"
+                android:text="Todas las rutas"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#0866D9" />
+
+            <Button
+                android:id="@+id/btnSoloAccesibles"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                android:text="Solo accesibles"
+                android:textSize="12sp"
+                android:textColor="#123B70"
+                android:backgroundTint="#DFE9F7" />
+
+        </LinearLayout>
+
+        <!-- Ruta 1 -->
+        <LinearLayout
+            android:id="@+id/cardRuta1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp"
+            android:background="#FFFFFF"
+            android:elevation="2dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ruta 1 - Más rápida"
+                android:textColor="#123B70"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvDatosRuta1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Distancia y duración pendientes de calcular"
+                android:textColor="#53657D"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvAccesibilidadRuta1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Accesibilidad: sin verificar"
+                android:textColor="#53657D"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <!-- Ruta 2 -->
+        <LinearLayout
+            android:id="@+id/cardRuta2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp"
+            android:background="#FFFFFF"
+            android:elevation="2dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ruta 2 - Alternativa"
+                android:textColor="#123B70"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvDatosRuta2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Distancia y duración pendientes de calcular"
+                android:textColor="#53657D"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvAccesibilidadRuta2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Accesibilidad: sin verificar"
+                android:textColor="#53657D"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <!-- Ruta 3 -->
+        <LinearLayout
+            android:id="@+id/cardRuta3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp"
+            android:layout_marginBottom="18dp"
+            android:background="#FFFFFF"
+            android:elevation="2dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ruta 3 - Otra alternativa"
+                android:textColor="#123B70"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvDatosRuta3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Distancia y duración pendientes de calcular"
+                android:textColor="#53657D"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvAccesibilidadRuta3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Accesibilidad: sin verificar"
+                android:textColor="#53657D"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <!-- Ver mapa -->
+        <Button
+            android:id="@+id/btnVerMapa"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Ver mapa"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:backgroundTint="#0866D9" />
+
+    </LinearLayout>
+
+</ScrollView>

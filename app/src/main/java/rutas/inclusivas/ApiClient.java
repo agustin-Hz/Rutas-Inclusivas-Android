@@ -26,7 +26,7 @@ public final class ApiClient {
     // Emulador de Android Studio: 10.0.2.2 apunta al localhost de la PC.
     // Celular físico: usar la IP de la PC en la red (ej. "http://192.168.0.15:5126/")
     // y levantar la API escuchando en esa IP.
-    public static final String BASE_URL = "http://10.0.2.2:5126/";
+    public static final String BASE_URL = "http://192.168.0.51:5126/";
 
 
     private static final int TIMEOUT_MS = 10_000;

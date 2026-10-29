@@ -18,6 +18,7 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.views.overlay.Marker;
+import android.widget.ImageButton;
 
 public class HomeActivity extends BaseActivity {
 
@@ -33,13 +34,19 @@ public class HomeActivity extends BaseActivity {
             return;
         }
 
-
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.home), (v, insets) -> {
-            Insets barras = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(barras.left, barras.top, barras.right, barras.bottom);
+            Insets barras = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+            );
+            v.setPadding(
+                    barras.left,
+                    barras.top,
+                    barras.right,
+                    barras.bottom
+            );
             return insets;
         });
 
@@ -48,31 +55,66 @@ public class HomeActivity extends BaseActivity {
         TextView tvSaludo = findViewById(R.id.tvSaludo);
         TextView tvDatos = findViewById(R.id.tvDatos);
         Button btnCerrar = findViewById(R.id.btnCerrarSesion);
-        Button btnAccesibilidad = findViewById(R.id.btnAccesibilidad);
 
-        btnAccesibilidad.setOnClickListener(v ->
-                startActivity(new Intent(this, AccesibilidadActivity.class)));
+        // Acceso rápido: buscar destino
+        ImageButton btnBuscarDestinoHome =
+                findViewById(R.id.btnBuscarDestinoHome);
 
-        // La primera vez que entra, se le ofrece configurar la accesibilidad.
+        btnBuscarDestinoHome.setOnClickListener(v -> {
+            startActivity(
+                    new Intent(HomeActivity.this, BuscarDestinoActivity.class)
+            );
+        });
+
+        // Acceso rápido: reportar obstáculo
+        ImageButton btnReportarHome =
+                findViewById(R.id.btnReportarHome);
+
+        btnReportarHome.setOnClickListener(v ->
+                mostrarDialogoReportar(sesion)
+        );
+
+        // Acceso rápido: configurar accesibilidad
+        ImageButton btnAccesibilidadHome =
+                findViewById(R.id.btnAccesibilidadHome);
+
+        btnAccesibilidadHome.setOnClickListener(v -> {
+            startActivity(
+                    new Intent(HomeActivity.this, AccesibilidadActivity.class)
+            );
+        });
+
+        // Primera configuración de accesibilidad
         if (!new AccesibilidadPrefs(this).estaConfigurada()) {
-            Intent primera = new Intent(this, AccesibilidadActivity.class);
-            primera.putExtra(AccesibilidadActivity.EXTRA_PRIMERA_VEZ, true);
+            Intent primera = new Intent(
+                    HomeActivity.this,
+                    AccesibilidadActivity.class
+            );
+            primera.putExtra(
+                    AccesibilidadActivity.EXTRA_PRIMERA_VEZ,
+                    true
+            );
             startActivity(primera);
         }
 
-        tvSaludo.setText(getString(R.string.home_saludo, sesion.getNombre()));
+        // Saludo y datos del usuario
+        tvSaludo.setText(
+                getString(R.string.home_saludo, sesion.getNombre())
+        );
+
         String zona = sesion.getZona();
-        tvDatos.setText(zona.isEmpty()
-                ? sesion.getCorreo()
-                : getString(R.string.home_datos, sesion.getCorreo(), zona));
 
+        tvDatos.setText(
+                zona.isEmpty()
+                        ? sesion.getCorreo()
+                        : getString(
+                        R.string.home_datos,
+                        sesion.getCorreo(),
+                        zona
+                )
+        );
 
-        // Botón para Reportar Obstáculo (Etapa 3)
-        Button btnReportar = findViewById(R.id.btnReportar);
-        if (btnReportar != null) {
-            btnReportar.setOnClickListener(v -> mostrarDialogoReportar(sesion));
-        }
-
+        // Cerrar sesión
         btnCerrar.setOnClickListener(v -> {
             sesion.cerrarSesion();
             irAlLogin();
@@ -182,4 +224,5 @@ public class HomeActivity extends BaseActivity {
         startActivity(intent);
         finish();
     }
+
 }
