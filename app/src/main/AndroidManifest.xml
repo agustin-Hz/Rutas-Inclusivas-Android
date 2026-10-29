@@ -36,6 +36,9 @@
             android:name=".ForgotPasswordActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ResetPasswordActivity"
+            android:exported="false" />
 
 
         <activity

@@ -1,5 +1,6 @@
 package rutas.inclusivas;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -56,7 +57,7 @@ public class ForgotPasswordActivity extends BaseActivity {
 
         setCargando(true);
 
-        // Ajusta la ruta "api/Auth/recuperar" al endpoint real de tu backend en C#
+        // Ajusta la ruta "api/Auth/recuperar" al endpoint real del backend en C#
         ApiClient.post("api/Auth/recuperar", json, respuesta -> {
             if (isFinishing() || isDestroyed()) return;
             setCargando(false);
@@ -65,6 +66,13 @@ public class ForgotPasswordActivity extends BaseActivity {
                 mensaje(R.string.error_sin_conexion);
             } else if (respuesta.code == 200) {
                 Toast.makeText(this, "Instrucciones enviadas", Toast.LENGTH_LONG).show();
+
+                // Iniciar la nueva pantalla
+                Intent intent = new Intent(this, ResetPasswordActivity.class);
+                intent.putExtra("correo_recuperacion", correo);
+                startActivity(intent);
+                finish(); // Cerramos la de recuperar correo
+
                 finish();
             } else if (respuesta.code == 404) {
                 etCorreo.setError("Correo no encontrado");
