@@ -261,5 +261,89 @@ namespace RutasInclusivasAPI.Controllers
                 });
             }
         }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> ObtenerReportesActivos()
+        {
+            try
+            {
+                using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
+                {
+                    await conexion.OpenAsync();
+
+                    string query = @"SELECT
+                    r.ID_Reporte,
+                    r.ID_Usuario,
+                    r.ID_Tipo,
+                    t.Nombre AS Tipo_Obstaculo,
+                    r.Descripcion,
+                    r.Ubicacion_Texto,
+                    r.Latitud,
+                    r.Longitud,
+                    r.Url_Fotografia,
+                    r.Fecha_Reporte,
+                    r.Estado
+                    FROM REPORTES r
+                    INNER JOIN TIPOS_OBSTACULO t
+                    ON r.ID_Tipo = t.ID_Tipo
+                    WHERE r.Estado = 'Activo'
+                    ORDER BY r.Fecha_Reporte DESC";
+
+                    using (MySqlCommand comando = new MySqlCommand(query, conexion))
+                    {
+                        using (var lector = await comando.ExecuteReaderAsync())
+                        {
+                            var reportes = new List<object>();
+
+                            while (await lector.ReadAsync())
+                            {
+                                string? ubicacion = null;
+                                if (lector["Ubicacion_Texto"] != DBNull.Value)
+                                {
+                                    ubicacion = lector.GetString("Ubicacion_Texto");
+                                }
+
+                                string? fotografia = null;
+                                if (lector["Url_Fotografia"] != DBNull.Value)
+                                {
+                                    fotografia = lector.GetString("Url_Fotografia");
+                                }
+
+                                DateTime? fecha = null;
+                                if (lector["Fecha_Reporte"] != DBNull.Value)
+                                {
+                                    fecha = lector.GetDateTime("Fecha_Reporte");
+                                }
+
+                                reportes.Add(new
+                                {
+                                    idReporte = lector.GetInt32("ID_Reporte"),
+                                    idUsuario = lector.GetInt32("ID_Usuario"),
+                                    idTipo = lector.GetInt32("ID_Tipo"),
+                                    tipoObstaculo = lector.GetString("Tipo_Obstaculo"),
+                                    descripcion = lector.GetString("Descripcion"),
+                                    ubicacionTexto = ubicacion,
+                                    latitud = lector.GetDecimal("Latitud"),
+                                    longitud = lector.GetDecimal("Longitud"),
+                                    urlFotografia = fotografia,
+                                    fechaReporte = fecha,
+                                    estado = lector.GetString("Estado")
+                                });
+                            }
+
+                            return Ok(reportes);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new
+                {
+                    mensaje = "Error al obtener los reportes"
+                });
+            }
+        }
     }
 }
