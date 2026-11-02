@@ -20,13 +20,35 @@ import org.osmdroid.api.IMapController;
 import org.osmdroid.views.overlay.Marker;
 import android.widget.ImageButton;
 
+/** Importo lo nececario para trabajar con la ubicación. */
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Location;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.tasks.CancellationTokenSource;
+
+import java.util.Map;
+
+
+
 public class HomeActivity extends BaseActivity {
 
     private MapView mapView;
+    private FusedLocationProviderClient fusedLocationClient;
+    private ActivityResultLauncher<String[]> solicitarPermisosUbicacion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 
         SessionManager sesion = new SessionManager(this);
         if (!sesion.haySesionValida()) {
@@ -35,7 +57,33 @@ public class HomeActivity extends BaseActivity {
         }
 
         EdgeToEdge.enable(this);
+
         setContentView(R.layout.activity_home);
+
+        solicitarPermisosUbicacion =
+                registerForActivityResult(
+                        new ActivityResultContracts.RequestMultiplePermissions(),
+                        resultado -> {
+
+                            boolean ubicacionPrecisa =
+                                    Boolean.TRUE.equals(
+                                            resultado.get(Manifest.permission.ACCESS_FINE_LOCATION));
+
+                            boolean ubicacionAproximada =
+                                    Boolean.TRUE.equals(
+                                            resultado.get(Manifest.permission.ACCESS_COARSE_LOCATION));
+
+                            if (ubicacionPrecisa || ubicacionAproximada) {
+                                obtenerUbicacion();
+                            }
+                        }
+                );
+
+
+
+
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.home), (v, insets) -> {
             Insets barras = insets.getInsets(
@@ -51,6 +99,7 @@ public class HomeActivity extends BaseActivity {
         });
 
         inicializarMapa();
+        verificarPermisosUbicacion();
 
         TextView tvSaludo = findViewById(R.id.tvSaludo);
         TextView tvDatos = findViewById(R.id.tvDatos);
@@ -98,21 +147,11 @@ public class HomeActivity extends BaseActivity {
         }
 
         // Saludo y datos del usuario
-        tvSaludo.setText(
-                getString(R.string.home_saludo, sesion.getNombre())
-        );
-
+        tvSaludo.setText(getString(R.string.home_saludo, sesion.getNombre()));
         String zona = sesion.getZona();
-
-        tvDatos.setText(
-                zona.isEmpty()
-                        ? sesion.getCorreo()
-                        : getString(
-                        R.string.home_datos,
-                        sesion.getCorreo(),
-                        zona
-                )
-        );
+        tvDatos.setText(zona.isEmpty()
+                ? sesion.getCorreo()
+                : getString(R.string.home_datos, sesion.getCorreo(), zona));
 
         // Cerrar sesión
         btnCerrar.setOnClickListener(v -> {
@@ -169,6 +208,112 @@ public class HomeActivity extends BaseActivity {
         mapView.invalidate();
     }
 
+    private void verificarPermisosUbicacion() {
+
+        boolean permisoPreciso =
+                ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED;
+
+        boolean permisoAproximado =
+                ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED;
+
+        if (permisoPreciso || permisoAproximado) {
+
+            obtenerUbicacion();
+
+        } else {
+
+            solicitarPermisosUbicacion.launch(
+                    new String[]{
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                    }
+            );
+        }
+    }
+
+    private void obtenerUbicacion() {
+
+        boolean permisoPreciso =
+                ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED;
+
+        boolean permisoAproximado =
+                ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED;
+
+        if (!permisoPreciso && !permisoAproximado) {
+            return;
+        }
+
+        int prioridad = permisoPreciso
+                ? Priority.PRIORITY_HIGH_ACCURACY
+                : Priority.PRIORITY_BALANCED_POWER_ACCURACY;
+
+        CancellationTokenSource token =
+                new CancellationTokenSource();
+
+        fusedLocationClient.getCurrentLocation(
+                prioridad,
+                token.getToken()
+        ).addOnSuccessListener(ubicacion -> {
+
+            if (ubicacion != null) {
+
+                double latitud = ubicacion.getLatitude();
+                double longitud = ubicacion.getLongitude();
+
+                centrarMapaEnUsuario(latitud, longitud);
+
+            } else {
+
+                android.widget.Toast.makeText(
+                        this,
+                        "No se pudo obtener la ubicación",
+                        android.widget.Toast.LENGTH_SHORT
+                ).show();
+            }
+
+        }).addOnFailureListener(error -> {
+
+            android.widget.Toast.makeText(
+                    this,
+                    "Error al obtener la ubicación",
+                    android.widget.Toast.LENGTH_SHORT
+            ).show();
+
+        });
+    }
+    private void centrarMapaEnUsuario(double latitud, double longitud) {
+
+        GeoPoint posicionUsuario =
+                new GeoPoint(latitud, longitud);
+
+        IMapController controlador = mapView.getController();
+
+        controlador.setZoom(17.0);
+
+        controlador.setCenter(posicionUsuario);
+
+        Marker marcador = new Marker(mapView);
+
+        marcador.setPosition(posicionUsuario);
+
+        marcador.setTitle("Mi ubicación");
+
+        mapView.getOverlays().add(marcador);
+
+        mapView.invalidate();
+    }
     @Override
     protected void onResume() {
         super.onResume();
