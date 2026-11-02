@@ -115,10 +115,16 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
                 android:text="GRUPO 39"
-                android:text2="UNIVERSIDAD TECNOLOGICA NACIONAL - FRGP"
                 android:textSize="13sp"
+                android:textColor="#526780"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="UNIVERSIDAD TECNOLÓGICA NACIONAL - FRGP"
+                android:textSize="12sp"
                 android:textColor="#526780"
                 android:gravity="center" />
 

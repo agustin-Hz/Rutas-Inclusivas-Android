@@ -5,6 +5,12 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Este permisos es para obtener la ubicación aproximada -->
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Este permisos es para obtener la ubicación precisa -->
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <!-- Necesario desde Android 11 para que TextToSpeech encuentre el motor de voz -->
     <queries>
@@ -46,7 +52,7 @@
             android:exported="false" />
 
             <activity
-                android:name=".MainActivity"
+                android:name=".HomeActivity"
                 android:exported="true">
                 <intent-filter>
                     <action android:name="android.intent.action.MAIN" />
@@ -55,7 +61,7 @@
             </activity>
 
             <activity
-                android:name=".HomeActivity"
+                android:name=".MainActivity"
                 android:exported="false" />
 
         <activity
