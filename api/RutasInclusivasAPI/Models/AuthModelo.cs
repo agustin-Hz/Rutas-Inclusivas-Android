@@ -16,4 +16,15 @@ namespace RutasInclusivasAPI.Models
         [Required]
         public string Correo { get; set; } = string.Empty;
     }
+    public class ResetearRequest
+    {
+        [Required]
+        public string Correo { get; set; } = string.Empty;
+
+        [Required]
+        public string Pin { get; set; } = string.Empty;
+
+        [Required]
+        public string NuevaContrasena { get; set; } = string.Empty;
+    }
 }

@@ -158,6 +158,84 @@ namespace RutasInclusivasAPI.Controllers
                 return StatusCode(500, new { error = "Error en el servidor", detalle = ex.Message });
             }
         }
+        // RESETEAR CONTRASEÑA - POST api/Auth/resetear
+        [HttpPost("resetear")]
+        public async Task<IActionResult> Resetear([FromBody] ResetearRequest request)
+        {
+            try
+            {
+                using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
+                {
+                    await conexion.OpenAsync();
+
+                    // 1. Buscar el PIN guardado y su fecha de expiración
+                    string querySelect = @"
+                SELECT PinRecuperacion, PinExpiraEn 
+                FROM USUARIOS 
+                WHERE Correo = @Correo AND Activo = TRUE";
+
+                    string? pinGuardado = null;
+                    DateTime? expiraEn = null;
+
+                    using (MySqlCommand cmdSelect = new MySqlCommand(querySelect, conexion))
+                    {
+                        cmdSelect.Parameters.AddWithValue("@Correo", request.Correo.Trim());
+                        using (var lector = await cmdSelect.ExecuteReaderAsync())
+                        {
+                            if (await lector.ReadAsync())
+                            {
+                                int posPin = lector.GetOrdinal("PinRecuperacion");
+                                int posExpira = lector.GetOrdinal("PinExpiraEn");
+
+                                pinGuardado = lector.IsDBNull(posPin) ? null : lector.GetString(posPin);
+                                expiraEn = lector.IsDBNull(posExpira) ? null : (DateTime?)lector.GetDateTime(posExpira);
+                            }
+                            else
+                            {
+                                return NotFound(new { mensaje = "Usuario no encontrado." });
+                            }
+                        }
+                    }
+
+                    // 2. Validar que el PIN sea correcto y no esté vencido
+                    if (pinGuardado == null || pinGuardado != request.Pin.Trim())
+                    {
+                        return BadRequest(new { mensaje = "PIN incorrecto." });
+                    }
+
+                    if (expiraEn == null || expiraEn < DateTime.Now)
+                    {
+                        return BadRequest(new { mensaje = "El PIN ha expirado." });
+                    }
+
+                    // 3. Encriptar la nueva contraseña
+                    string hashNuevaContrasena = BCrypt.Net.BCrypt.HashPassword(request.NuevaContrasena);
+
+                    // 4. Actualizar contraseña y borrar el PIN usado
+                    string queryUpdate = @"
+                UPDATE USUARIOS 
+                SET Contrasena = @Hash, 
+                    PinRecuperacion = NULL, 
+                    PinExpiraEn = NULL 
+                WHERE Correo = @Correo";
+
+                    using (MySqlCommand cmdUpdate = new MySqlCommand(queryUpdate, conexion))
+                    {
+                        cmdUpdate.Parameters.AddWithValue("@Hash", hashNuevaContrasena);
+                        cmdUpdate.Parameters.AddWithValue("@Correo", request.Correo.Trim());
+
+                        await cmdUpdate.ExecuteNonQueryAsync();
+                    }
+
+                    return Ok(new { mensaje = "Contraseña actualizada correctamente." });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al resetear contraseña");
+                return StatusCode(500, new { error = "Error en el servidor", detalle = ex.Message });
+            }
+        }
 
         private (string Token, DateTime Expira) GenerarAccessToken(int idUsuario, string nombre, string correo)
         {
