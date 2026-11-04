@@ -37,6 +37,8 @@ import com.google.android.gms.tasks.CancellationTokenSource;
 
 import java.util.Map;
 
+import org.json.JSONObject;
+
 
 
 public class HomeActivity extends BaseActivity {
@@ -100,6 +102,7 @@ public class HomeActivity extends BaseActivity {
 
         inicializarMapa();
         verificarPermisosUbicacion();
+        cargarReportesEnMapa(sesion);
 
         TextView tvSaludo = findViewById(R.id.tvSaludo);
         TextView tvDatos = findViewById(R.id.tvDatos);
@@ -361,6 +364,57 @@ public class HomeActivity extends BaseActivity {
             String msj = resp.isSuccess() ? "¡Reporte enviado exitosamente!" : "Error al enviar el reporte";
             android.widget.Toast.makeText(this, msj, android.widget.Toast.LENGTH_SHORT).show();
         });
+    }
+
+    private void cargarReportesEnMapa(SessionManager sesion) {
+
+        ApiClient.get("api/Reportes", sesion.getToken(),
+                (codigo, reportes, errorRed) -> {
+
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
+
+                    if (errorRed || codigo != 200) {
+                        android.widget.Toast.makeText(
+                                this,
+                                "No se pudieron cargar los reportes",
+                                android.widget.Toast.LENGTH_SHORT
+                        ).show();
+                        return;
+                    }
+
+                    for (int i = 0; i < reportes.length(); i++) {
+
+                        JSONObject reporte = reportes.optJSONObject(i);
+
+                        if (reporte == null) {
+                            continue;
+                        }
+
+                        double latitud = reporte.optDouble("latitud", Double.NaN);
+                        double longitud = reporte.optDouble("longitud", Double.NaN);
+
+                        if (Double.isNaN(latitud) || Double.isNaN(longitud)) {
+                            continue;
+                        }
+
+                        Marker marcador = new Marker(mapView);
+
+                        marcador.setPosition(new GeoPoint(latitud, longitud));
+
+                        marcador.setTitle(
+                                reporte.optString("tipoObstaculo", "Obstáculo")
+                        );
+
+                        marcador.setSnippet(
+                                reporte.optString("descripcion", "Sin descripción")
+                        );
+
+                        mapView.getOverlays().add(marcador);
+                    }
+                    mapView.invalidate();
+                });
     }
 
     private void irAlLogin() {

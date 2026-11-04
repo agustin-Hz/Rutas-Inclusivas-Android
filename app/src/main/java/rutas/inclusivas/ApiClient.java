@@ -5,6 +5,7 @@ import android.os.Looper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,7 +27,7 @@ public final class ApiClient {
     // Emulador de Android Studio: 10.0.2.2 apunta al localhost de la PC.
     // Celular físico: usar la IP de la PC en la red (ej. "http://192.168.0.15:5126/")
     // y levantar la API escuchando en esa IP.
-    public static final String BASE_URL = "http://192.168.0.51:5126/";
+    public static final String BASE_URL = "http://10.0.2.2:5126/";
 
 
     private static final int TIMEOUT_MS = 10_000;
@@ -55,6 +56,10 @@ public final class ApiClient {
     public interface Callback {
         /** Se ejecuta siempre en el hilo principal. */
         void onResult(Response response);
+    }
+
+    public interface GetCallback {
+        void onResult(int codigo, JSONArray reportes, boolean errorRed);
     }
 
     public static void post(String path, JSONObject json, Callback callback) {
@@ -110,5 +115,78 @@ public final class ApiClient {
             // Respuesta vacía o que no es JSON (ej. página de error): se trata como cuerpo vacío.
             return new JSONObject();
         }
+    }
+
+    private static JSONArray leerJsonArray(InputStream flujo)
+            throws IOException, JSONException {
+
+        if (flujo == null) {
+            throw new IOException("La respuesta está vacía");
+        }
+
+        try (InputStream in = flujo) {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            byte[] bloque = new byte[1024];
+            int leidos;
+            while ((leidos = in.read(bloque)) != -1) {
+                buffer.write(bloque, 0, leidos);
+            }
+            String texto = buffer.toString("UTF-8");
+            return new JSONArray(texto);
+        }
+    }
+
+    public static void get(String path, String token, GetCallback callback) {
+
+        EXECUTOR.execute(() -> {
+            HttpURLConnection conexion = null;
+            int codigo = -1;
+            JSONArray reportes = new JSONArray();
+            boolean errorRed = false;
+
+            try {
+                // Abrir la conexión con la API
+                conexion = (HttpURLConnection) new URL(BASE_URL + path).openConnection();
+
+                // Configurar la solicitud GET
+                conexion.setRequestMethod("GET");
+                conexion.setConnectTimeout(TIMEOUT_MS);
+                conexion.setReadTimeout(TIMEOUT_MS);
+                conexion.setRequestProperty("Accept", "application/json");
+
+                // Enviar el token JWT
+                if (token != null && !token.trim().isEmpty()) {
+                    conexion.setRequestProperty("Authorization", "Bearer " + token);
+                }
+
+                // Obtener el código de respuesta HTTP
+                codigo = conexion.getResponseCode();
+
+                // Si la respuesta fue exitosa, lee los reportes
+                if (codigo >= 200 && codigo < 300) {
+                    reportes = leerJsonArray(conexion.getInputStream());
+                }
+
+            } catch (IOException e) {
+                errorRed = true;
+
+            } catch (JSONException e) {
+                codigo = -1;
+
+            } finally {
+                if (conexion != null) {
+                    conexion.disconnect();
+                }
+            }
+
+            // Enviar los resultados al hilo principal de Android
+            int codigoFinal = codigo;
+            JSONArray reportesFinal = reportes;
+            boolean errorRedFinal = errorRed;
+
+            MAIN.post(() ->
+                    callback.onResult(codigoFinal, reportesFinal, errorRedFinal)
+            );
+        });
     }
 }
