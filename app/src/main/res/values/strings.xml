@@ -44,6 +44,7 @@
     <string name="recuperar_no_disponible">Esta función todavía no está disponible. Estamos trabajando en ella.</string>
     <string name="recuperar_instruccion">Ingresá tu correo para recuperar la contraseña:</string>
     <string name="recuperar_aceptar">Aceptar</string>
+    <string name="recuperar_enviado">Si el correo está registrado, te enviamos un código</string>
     <string name="recuperar_cancelar">Cancelar</string>
 
     <!-- Inicio -->

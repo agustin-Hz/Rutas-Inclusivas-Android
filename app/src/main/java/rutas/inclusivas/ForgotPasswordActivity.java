@@ -65,18 +65,13 @@ public class ForgotPasswordActivity extends BaseActivity {
             if (respuesta.networkError) {
                 mensaje(R.string.error_sin_conexion);
             } else if (respuesta.code == 200) {
-                Toast.makeText(this, "Instrucciones enviadas", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.recuperar_enviado, Toast.LENGTH_LONG).show();
 
                 // Iniciar la nueva pantalla
                 Intent intent = new Intent(this, ResetPasswordActivity.class);
                 intent.putExtra("correo_recuperacion", correo);
                 startActivity(intent);
                 finish(); // Cerramos la de recuperar correo
-
-                finish();
-            } else if (respuesta.code == 404) {
-                etCorreo.setError("Correo no encontrado");
-                etCorreo.requestFocus();
             } else {
                 mensaje(R.string.error_servidor);
             }
