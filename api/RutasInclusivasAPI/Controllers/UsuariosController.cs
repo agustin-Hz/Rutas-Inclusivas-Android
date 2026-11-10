@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using RutasInclusivasAPI.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace RutasInclusivasAPI.Controllers
 {
@@ -51,9 +53,13 @@ namespace RutasInclusivasAPI.Controllers
         }
 
         // 2. MODIFICACIÓN (PUT)
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
+        [Authorize]
         public IActionResult ModificarUsuario(int id, [FromBody] UsuarioRegistro usuario)
         {
+            if (!EsElMismoUsuario(id))
+                return StatusCode(403, new { mensaje = "No podés modificar la cuenta de otro usuario" });
+
             try
             {
                 using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
@@ -81,9 +87,12 @@ namespace RutasInclusivasAPI.Controllers
         }
 
         // 3. BAJA (DELETE) BAJA FISICA
-        [HttpDelete("{id}/fisica")]
+        [HttpDelete("{id:int}/fisica")]
+        [Authorize]
         public IActionResult EliminarUsuario(int id)
         {
+            if (!EsElMismoUsuario(id))
+                return StatusCode(403, new { mensaje = "No podés modificar la cuenta de otro usuario" });
             try
             {
                 using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
@@ -109,9 +118,13 @@ namespace RutasInclusivasAPI.Controllers
         }
 
         // 4. BAJA (DELETE) BAJA LOGICA
-        [HttpDelete("{id}/logica")]
+        [HttpDelete("{id:int}/logica")]
+        [Authorize]
         public IActionResult EliminarUsuarioLogica(int id)
         {
+            if (!EsElMismoUsuario(id))
+                return StatusCode(403, new { mensaje = "No podés modificar la cuenta de otro usuario" });
+
             try
             {
                 using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
@@ -152,6 +165,12 @@ namespace RutasInclusivasAPI.Controllers
                     detalle = ex.Message
                 });
             }
+        }
+
+        private bool EsElMismoUsuario(int id)
+        {
+            string? idTexto = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            return int.TryParse(idTexto, out int idToken) && idToken == id;
         }
 
     }
