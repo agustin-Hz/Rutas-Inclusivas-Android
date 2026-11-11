@@ -361,7 +361,17 @@ public class HomeActivity extends BaseActivity {
 
         ApiClient.post("api/Reportes", json, sesion.getToken(), resp -> {
             if (isFinishing() || isDestroyed()) return;
-            String msj = resp.isSuccess() ? "¡Reporte enviado exitosamente!" : "Error al enviar el reporte";
+
+            String msj;
+
+            if (resp.networkError) {
+                msj = "Error de conexión con la API";
+            } else if (resp.isSuccess()) {
+                msj = "¡Reporte enviado exitosamente!";
+            } else {
+                msj = "Error HTTP: " + resp.code;
+            }
+
             android.widget.Toast.makeText(this, msj, android.widget.Toast.LENGTH_SHORT).show();
         });
     }
@@ -376,11 +386,21 @@ public class HomeActivity extends BaseActivity {
                     }
 
                     if (errorRed || codigo != 200) {
+
+                        String mensaje;
+
+                        if (errorRed) {
+                            mensaje = "GET: Error de conexión con la API";
+                        } else {
+                            mensaje = "GET: Error HTTP " + codigo;
+                        }
+
                         android.widget.Toast.makeText(
                                 this,
-                                "No se pudieron cargar los reportes",
-                                android.widget.Toast.LENGTH_SHORT
+                                mensaje,
+                                android.widget.Toast.LENGTH_LONG
                         ).show();
+
                         return;
                     }
 
