@@ -58,7 +58,7 @@ public class ForgotPasswordActivity extends BaseActivity {
         setCargando(true);
 
         // Ajusta la ruta "api/Auth/recuperar" al endpoint real del backend en C#
-        ApiClient.post("api/Auth/recuperar", json, respuesta -> {
+        ApiClient.postPublico("api/Auth/recuperar", json, respuesta -> {
             if (isFinishing() || isDestroyed()) return;
             setCargando(false);
 

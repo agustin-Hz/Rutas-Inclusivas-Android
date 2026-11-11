@@ -70,7 +70,7 @@ public class ResetPasswordActivity extends BaseActivity {
 
         setCargando(true);
 
-        ApiClient.post("api/Auth/resetear", json, respuesta -> {
+        ApiClient.postPublico("api/Auth/resetear", json, respuesta -> {
             if (isFinishing() || isDestroyed()) return;
             setCargando(false);
 

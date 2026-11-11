@@ -13,6 +13,8 @@
     <string name="login_subtitulo">Ingresá a tu cuenta para acceder a tus funciones.</string>
     <string name="hint_contrasena_login">Ingresá tu contraseña</string>
     <string name="recuperar_boton">¿Olvidaste tu contraseña?</string>
+    <string name="sesion_expirada">Tu sesión expiró. Iniciá sesión de nuevo.</string>
+
 
     <!-- Bienvenida -->
     <string name="desc_logo">Símbolo de accesibilidad</string>
@@ -97,4 +99,5 @@
     <string name="error_datos_invalidos">Revisá los datos ingresados</string>
     <string name="error_respuesta_invalida">Respuesta inesperada del servidor</string>
     <string name="error_servidor">Ocurrió un error en el servidor. Intentá más tarde.</string>
+
 </resources>

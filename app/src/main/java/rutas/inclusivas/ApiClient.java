@@ -1,11 +1,15 @@
 package rutas.inclusivas;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONArray;
+import org.json.JSONTokener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,112 +22,155 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Cliente HTTP mínimo para hablar con RutasInclusivasAPI.
+ * Cliente HTTP para hablar con RutasInclusivasAPI.
  * La app NUNCA se conecta directo a MySQL: todo pasa por la API.
- * Usa solo clases del SDK (HttpURLConnection + org.json), sin dependencias extra.
+
+ * Si un pedido con sesión recibe 401 (token vencido o inválido), ApiClient cierra
+ * la sesión y lleva al login. En ese caso el callback de la pantalla NO se ejecuta.
  */
 public final class ApiClient {
 
-    // Emulador de Android Studio: 10.0.2.2 apunta al localhost de la PC.
-    // Celular físico: usar la IP de la PC en la red (ej. "http://192.168.0.15:5126/")
-    // y levantar la API escuchando en esa IP.
-    public static final String BASE_URL = "http://10.0.2.2:5126/";
-
-
+    // Se define en app/build.gradle (buildConfigField "API_BASE_URL").
+    public static final String BASE_URL = BuildConfig.API_BASE_URL;
     private static final int TIMEOUT_MS = 10_000;
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(2);
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
-    private ApiClient() {}
+    // Contexto de toda la app: lo carga RutasInclusivasApp al iniciar.
+    private static Context appContext;
 
-    /** Resultado de una llamada. */
+    private ApiClient() {
+    }
+
+    /**
+     * Se llama una sola vez, al arrancar la app (ver RutasInclusivasApp).
+     */
+    public static void init(Context contexto) {
+        appContext = contexto.getApplicationContext();
+    }
+
+    // Resultado de un pedido
     public static final class Response {
         public final int code;               // código HTTP, o -1 si no hubo conexión
-        public final JSONObject body;        // nunca null (puede estar vacío)
-        public final boolean networkError;
+        public final JSONObject body;        // respuesta si es un objeto {...}; nunca null
+        public final JSONArray array;        // respuesta si es una lista [...]; nunca null
+        public final boolean networkError;   // true si no se pudo conectar con la API
 
-        Response(int code, JSONObject body, boolean networkError) {
+        Response(int code, JSONObject body, JSONArray array, boolean networkError) {
             this.code = code;
             this.body = body;
+            this.array = array;
             this.networkError = networkError;
         }
 
+        /**
+         * Conexion exitosa y el código está entre 200 y 299.
+         */
         public boolean isSuccess() {
             return !networkError && code >= 200 && code < 300;
+        }
+
+        /**
+         * Mensaje enviado por la API o el texto de respaldo.
+         */
+        public String mensaje(String respaldo) {
+            String texto = body.optString("mensaje", "");
+            if (texto.isEmpty()) texto = body.optString("error", "");
+            return texto.isEmpty() ? respaldo : texto;
         }
     }
 
     public interface Callback {
-        /** Se ejecuta siempre en el hilo principal. */
+        /**
+         * Se ejecuta siempre en el hilo principal.
+         */
         void onResult(Response response);
     }
 
-    public interface GetCallback {
-        void onResult(int codigo, JSONArray reportes, boolean errorRed);
+    // Pedidos públicos (sin sesión): no envían token ni manejan el 401
+    public static void postPublico(String path, JSONObject json, Callback callback) {
+        enviar("POST", path, json, false, callback);
+    }
+
+    // Pedidos con sesión: envían el token y manejan el 401
+    public static void get(String path, Callback callback) {
+        enviar("GET", path, null, true, callback);
     }
 
     public static void post(String path, JSONObject json, Callback callback) {
-        post(path, json, null, callback);
+        enviar("POST", path, json, true, callback);
     }
 
-    public static void post(String path, JSONObject json, String token, Callback callback) {
+    public static void put(String path, JSONObject json, Callback callback) {
+        enviar("PUT", path, json, true, callback);
+    }
+
+    public static void delete(String path, Callback callback) {
+        enviar("DELETE", path, null, true, callback);
+    }
+
+    // Motor común: todos los métodos públicos terminan acá
+
+    private static void enviar(String metodo, String path, JSONObject json, boolean conSesion, Callback callback) {
+        if (appContext == null) {
+            throw new IllegalStateException("Falta llamar a ApiClient.init(...)");
+        }
+        // El token se lee acá (hilo principal) y se pasa al hilo de fondo.
+        String token = conSesion ? new SessionManager(appContext).getToken() : null;
+
         EXECUTOR.execute(() -> {
-            Response response = ejecutarPost(path, json, token);
-            MAIN.post(() -> callback.onResult(response));
+            // [hilo secundario] pedido HTTP
+            Response response = ejecutar(metodo, path, json, token);
+
+            MAIN.post(() -> {
+                // [hilo principal] token vencido o inválido: login
+                if (conSesion && response.code == 401 && manejarSesionExpirada()) {
+                    return;
+                }
+                callback.onResult(response);
+            });
         });
     }
 
-    private static Response ejecutarPost(String path, JSONObject json, String token) {
+    /** Arma, envía y lee un pedido HTTP. Se ejecuta en un hilo secundario. */
+    private static Response ejecutar(String metodo, String path, JSONObject json, String token) {
         HttpURLConnection conexion = null;
         try {
             conexion = (HttpURLConnection) new URL(BASE_URL + path).openConnection();
-            conexion.setRequestMethod("POST");
+            conexion.setRequestMethod(metodo);
             conexion.setConnectTimeout(TIMEOUT_MS);
             conexion.setReadTimeout(TIMEOUT_MS);
-            conexion.setDoOutput(true);
-            conexion.setRequestProperty("Content-Type", "application/json; charset=utf-8");
             conexion.setRequestProperty("Accept", "application/json");
+
             if (token != null && !token.trim().isEmpty()) {
                 conexion.setRequestProperty("Authorization", "Bearer " + token);
             }
 
-            byte[] datos = json.toString().getBytes(StandardCharsets.UTF_8);
-            try (OutputStream salida = conexion.getOutputStream()) {
-                salida.write(datos);
+            // Solo POST y PUT llevan cuerpo
+            if (json != null) {
+                conexion.setDoOutput(true);
+                conexion.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+                byte[] datos = json.toString().getBytes(StandardCharsets.UTF_8);
+                try (OutputStream salida = conexion.getOutputStream()) {
+                    salida.write(datos);
+                }
             }
 
             int codigo = conexion.getResponseCode();
             InputStream flujo = codigo < 400 ? conexion.getInputStream() : conexion.getErrorStream();
-            return new Response(codigo, leerJson(flujo), false);
+            return crearResponse(codigo, leerTexto(flujo));
+
         } catch (IOException e) {
-            return new Response(-1, new JSONObject(), true);
+            // API apagada, sin internet o timeout
+            return new Response(-1, new JSONObject(), new JSONArray(), true);
         } finally {
             if (conexion != null) conexion.disconnect();
         }
     }
 
-    private static JSONObject leerJson(InputStream flujo) {
-        if (flujo == null) return new JSONObject();
-        try (InputStream in = flujo) {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            byte[] bloque = new byte[1024];
-            int leidos;
-            while ((leidos = in.read(bloque)) != -1) buffer.write(bloque, 0, leidos);
-            String texto = buffer.toString("UTF-8").trim();
-            return texto.isEmpty() ? new JSONObject() : new JSONObject(texto);
-        } catch (IOException | JSONException e) {
-            // Respuesta vacía o que no es JSON (ej. página de error): se trata como cuerpo vacío.
-            return new JSONObject();
-        }
-    }
-
-    private static JSONArray leerJsonArray(InputStream flujo)
-            throws IOException, JSONException {
-
-        if (flujo == null) {
-            throw new IOException("La respuesta está vacía");
-        }
-
+    /** Lee todo el flujo como texto UTF-8. Devuelve "" si no hay cuerpo. */
+    private static String leerTexto(InputStream flujo) throws IOException {
+        if (flujo == null) return "";
         try (InputStream in = flujo) {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             byte[] bloque = new byte[1024];
@@ -131,62 +178,47 @@ public final class ApiClient {
             while ((leidos = in.read(bloque)) != -1) {
                 buffer.write(bloque, 0, leidos);
             }
-            String texto = buffer.toString("UTF-8");
-            return new JSONArray(texto);
+            return buffer.toString("UTF-8").trim();
         }
     }
 
-    public static void get(String path, String token, GetCallback callback) {
+    /** Detecta si el texto es un objeto {...} o una lista [...] y arma el Response. */
+    private static Response crearResponse(int codigo, String texto) {
+        JSONObject objeto = new JSONObject();
+        JSONArray lista = new JSONArray();
 
-        EXECUTOR.execute(() -> {
-            HttpURLConnection conexion = null;
-            int codigo = -1;
-            JSONArray reportes = new JSONArray();
-            boolean errorRed = false;
-
+        if (!texto.isEmpty()) {
             try {
-                // Abrir la conexión con la API
-                conexion = (HttpURLConnection) new URL(BASE_URL + path).openConnection();
-
-                // Configurar la solicitud GET
-                conexion.setRequestMethod("GET");
-                conexion.setConnectTimeout(TIMEOUT_MS);
-                conexion.setReadTimeout(TIMEOUT_MS);
-                conexion.setRequestProperty("Accept", "application/json");
-
-                // Enviar el token JWT
-                if (token != null && !token.trim().isEmpty()) {
-                    conexion.setRequestProperty("Authorization", "Bearer " + token);
+                Object valor = new JSONTokener(texto).nextValue();
+                if (valor instanceof JSONObject) {
+                    objeto = (JSONObject) valor;
+                } else if (valor instanceof JSONArray) {
+                    lista = (JSONArray) valor;
                 }
-
-                // Obtener el código de respuesta HTTP
-                codigo = conexion.getResponseCode();
-
-                // Si la respuesta fue exitosa, lee los reportes
-                if (codigo >= 200 && codigo < 300) {
-                    reportes = leerJsonArray(conexion.getInputStream());
-                }
-
-            } catch (IOException e) {
-                errorRed = true;
-
-            } catch (JSONException e) {
-                codigo = -1;
-
-            } finally {
-                if (conexion != null) {
-                    conexion.disconnect();
-                }
+            } catch (JSONException ignored) {
+                // La respuesta no es JSON (por ejemplo, una página de error): queda vacía
             }
+        }
+        return new Response(codigo, objeto, lista, false);
+    }
 
-            // Enviar los resultados al hilo principal de Android
-            int codigoFinal = codigo;
-            JSONArray reportesFinal = reportes;
-            boolean errorRedFinal = errorRed;
+    /**
+     * Cierra la sesión y lleva al login. Devuelve true si había sesión para cerrar.
+     * Si no había token guardado (ya se cerró por otro pedido), devuelve false
+     * y el callback de la pantalla se ejecuta normalmente.
+     */
+    private static boolean manejarSesionExpirada() {
+        SessionManager sesion = new SessionManager(appContext);
+        if (sesion.getToken() == null) {
+            return false;
+        }
 
-            MAIN.post(() ->
-                    callback.onResult(codigoFinal, reportesFinal, errorRedFinal)
-            );
-        });
+        sesion.cerrarSesion();
+        Toast.makeText(appContext, R.string.sesion_expirada, Toast.LENGTH_LONG).show();
+
+        Intent intent = new Intent(appContext, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        appContext.startActivity(intent);
+        return true;
     }
 }

@@ -94,7 +94,7 @@ public class LoginActivity extends BaseActivity {
         }
 
         setCargando(true);
-        ApiClient.post("api/Auth/login", json, respuesta -> {
+        ApiClient.postPublico("api/Auth/login", json, respuesta -> {
             if (isFinishing() || isDestroyed()) return;
             setCargando(false);
 

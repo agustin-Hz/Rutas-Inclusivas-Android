@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import org.json.JSONArray;
 
 import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
@@ -102,7 +103,7 @@ public class HomeActivity extends BaseActivity {
 
         inicializarMapa();
         verificarPermisosUbicacion();
-        cargarReportesEnMapa(sesion);
+        cargarReportesEnMapa();
 
         TextView tvSaludo = findViewById(R.id.tvSaludo);
         TextView tvDatos = findViewById(R.id.tvDatos);
@@ -123,7 +124,7 @@ public class HomeActivity extends BaseActivity {
                 findViewById(R.id.btnReportarHome);
 
         btnReportarHome.setOnClickListener(v ->
-                mostrarDialogoReportar(sesion)
+                mostrarDialogoReportar()
         );
 
         // Acceso rápido: configurar accesibilidad
@@ -334,7 +335,7 @@ public class HomeActivity extends BaseActivity {
 
         super.onPause();
     }
-    private void mostrarDialogoReportar(SessionManager sesion) {
+    private void mostrarDialogoReportar() {
         final android.widget.EditText input = new android.widget.EditText(this);
         input.setHint("Ej: Rampa rota o bloqueada");
 
@@ -344,13 +345,13 @@ public class HomeActivity extends BaseActivity {
                 .setView(input)
                 .setPositiveButton("Enviar", (dialog, which) -> {
                     String desc = input.getText().toString().trim();
-                    if (!desc.isEmpty()) enviarReporteApi(sesion, desc);
+                    if (!desc.isEmpty()) enviarReporteApi(desc);
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
 
-    private void enviarReporteApi(SessionManager sesion, String desc) {
+    private void enviarReporteApi(String desc) {
         org.json.JSONObject json = new org.json.JSONObject();
         try {
             json.put("ID_Tipo", 1);
@@ -359,83 +360,77 @@ public class HomeActivity extends BaseActivity {
             json.put("Longitud", -58.65432);
         } catch (org.json.JSONException ignored) {}
 
-        ApiClient.post("api/Reportes", json, sesion.getToken(), resp -> {
+        ApiClient.post("api/Reportes", json, respuesta -> {
             if (isFinishing() || isDestroyed()) return;
 
             String msj;
 
-            if (resp.networkError) {
+            if (respuesta.networkError) {
                 msj = "Error de conexión con la API";
-            } else if (resp.isSuccess()) {
+            } else if (respuesta.isSuccess()) {
                 msj = "¡Reporte enviado exitosamente!";
             } else {
-                msj = "Error HTTP: " + resp.code;
+                msj = "Error HTTP: " + respuesta.code;
             }
 
             android.widget.Toast.makeText(this, msj, android.widget.Toast.LENGTH_SHORT).show();
         });
     }
 
-    private void cargarReportesEnMapa(SessionManager sesion) {
+    private void cargarReportesEnMapa() {
 
-        ApiClient.get("api/Reportes", sesion.getToken(),
-                (codigo, reportes, errorRed) -> {
+        ApiClient.get("api/Reportes", respuesta -> {
 
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
 
-                    if (errorRed || codigo != 200) {
+            if (!respuesta.isSuccess()) {
+                String mensaje;
 
-                        String mensaje;
+                if (respuesta.networkError) {
+                    mensaje = "GET: Error de conexión con la API";
+                } else {
+                    mensaje = "GET: Error HTTP " + respuesta.code;
+                }
 
-                        if (errorRed) {
-                            mensaje = "GET: Error de conexión con la API";
-                        } else {
-                            mensaje = "GET: Error HTTP " + codigo;
-                        }
+                android.widget.Toast.makeText(
+                        this,
+                        mensaje,
+                        android.widget.Toast.LENGTH_LONG
+                ).show();
 
-                        android.widget.Toast.makeText(
-                                this,
-                                mensaje,
-                                android.widget.Toast.LENGTH_LONG
-                        ).show();
+                return;
+            }
 
-                        return;
-                    }
+            JSONArray reportes = respuesta.array;   // la API devuelve una lista
 
-                    for (int i = 0; i < reportes.length(); i++) {
+            for (int i = 0; i < reportes.length(); i++) {
 
-                        JSONObject reporte = reportes.optJSONObject(i);
+                JSONObject reporte = reportes.optJSONObject(i);
 
-                        if (reporte == null) {
-                            continue;
-                        }
+                if (reporte == null) {
+                    continue;
+                }
 
-                        double latitud = reporte.optDouble("latitud", Double.NaN);
-                        double longitud = reporte.optDouble("longitud", Double.NaN);
+                double latitud = reporte.optDouble("latitud", Double.NaN);
+                double longitud = reporte.optDouble("longitud", Double.NaN);
 
-                        if (Double.isNaN(latitud) || Double.isNaN(longitud)) {
-                            continue;
-                        }
+                if (Double.isNaN(latitud) || Double.isNaN(longitud)) {
+                    continue;
+                }
 
-                        Marker marcador = new Marker(mapView);
+                Marker marcador = new Marker(mapView);
+                marcador.setPosition(new GeoPoint(latitud, longitud));
+                marcador.setTitle(reporte.optString("tipoObstaculo", "Obstáculo"));
+                marcador.setSnippet(reporte.optString("descripcion", "Sin descripción"));
 
-                        marcador.setPosition(new GeoPoint(latitud, longitud));
-
-                        marcador.setTitle(
-                                reporte.optString("tipoObstaculo", "Obstáculo")
-                        );
-
-                        marcador.setSnippet(
-                                reporte.optString("descripcion", "Sin descripción")
-                        );
-
-                        mapView.getOverlays().add(marcador);
-                    }
-                    mapView.invalidate();
-                });
+                mapView.getOverlays().add(marcador);
+            }
+            mapView.invalidate();
+        });
     }
+
 
     private void irAlLogin() {
         Intent intent = new Intent(this, LoginActivity.class);

@@ -95,7 +95,7 @@ public class RegisterActivity extends BaseActivity {
         }
 
         setCargando(true);
-        ApiClient.post("api/Usuarios", json, respuesta -> {
+        ApiClient.postPublico("api/Usuarios", json, respuesta -> {
             if (isFinishing() || isDestroyed()) return;
             setCargando(false);
 
