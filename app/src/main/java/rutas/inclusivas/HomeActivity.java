@@ -37,6 +37,8 @@ import com.google.android.gms.location.Priority;
 import com.google.android.gms.tasks.CancellationTokenSource;
 
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONObject;
 
@@ -48,6 +50,7 @@ public class HomeActivity extends BaseActivity {
     private FusedLocationProviderClient fusedLocationClient;
     private Double latitudActual = null;
     private Double longitudActual = null;
+    private final List<Marker> marcadoresReportes = new ArrayList<>();
     private ActivityResultLauncher<String[]> solicitarPermisosUbicacion;
 
     @Override
@@ -383,6 +386,9 @@ public class HomeActivity extends BaseActivity {
                 msj = "Error de conexión con la API";
             } else if (respuesta.isSuccess()) {
                 msj = "¡Reporte enviado exitosamente!";
+
+                cargarReportesEnMapa();
+
             } else {
                 msj = "Error HTTP: " + respuesta.code;
             }
@@ -419,6 +425,10 @@ public class HomeActivity extends BaseActivity {
 
             JSONArray reportes = respuesta.array;   // la API devuelve una lista
 
+            // Eliminar los marcadores de reportes anteriores
+            mapView.getOverlays().removeAll(marcadoresReportes);
+            marcadoresReportes.clear();
+
             for (int i = 0; i < reportes.length(); i++) {
 
                 JSONObject reporte = reportes.optJSONObject(i);
@@ -440,6 +450,7 @@ public class HomeActivity extends BaseActivity {
                 marcador.setSnippet(reporte.optString("descripcion", "Sin descripción"));
 
                 mapView.getOverlays().add(marcador);
+                marcadoresReportes.add(marcador);
             }
             mapView.invalidate();
         });
