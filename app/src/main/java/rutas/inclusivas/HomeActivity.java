@@ -46,6 +46,8 @@ public class HomeActivity extends BaseActivity {
 
     private MapView mapView;
     private FusedLocationProviderClient fusedLocationClient;
+    private Double latitudActual = null;
+    private Double longitudActual = null;
     private ActivityResultLauncher<String[]> solicitarPermisosUbicacion;
 
     @Override
@@ -276,6 +278,9 @@ public class HomeActivity extends BaseActivity {
                 double latitud = ubicacion.getLatitude();
                 double longitud = ubicacion.getLongitude();
 
+                latitudActual = latitud;
+                longitudActual = longitud;
+
                 centrarMapaEnUsuario(latitud, longitud);
 
             } else {
@@ -352,12 +357,21 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void enviarReporteApi(String desc) {
+        if (latitudActual == null || longitudActual == null) {
+            android.widget.Toast.makeText(
+                    this,
+                    "Todavía no se pudo obtener tu ubicación",
+                    android.widget.Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
         org.json.JSONObject json = new org.json.JSONObject();
         try {
             json.put("ID_Tipo", 1);
             json.put("Descripcion", desc);
-            json.put("Latitud", -34.45612);
-            json.put("Longitud", -58.65432);
+            json.put("Latitud", latitudActual);
+            json.put("Longitud", longitudActual);
         } catch (org.json.JSONException ignored) {}
 
         ApiClient.post("api/Reportes", json, respuesta -> {
