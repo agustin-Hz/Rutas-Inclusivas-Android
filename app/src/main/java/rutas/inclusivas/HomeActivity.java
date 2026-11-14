@@ -446,8 +446,32 @@ public class HomeActivity extends BaseActivity {
 
                 Marker marcador = new Marker(mapView);
                 marcador.setPosition(new GeoPoint(latitud, longitud));
+                String descripcion = reporte.optString("descripcion", "Sin descripción");
+                String estado = reporte.optString("estado", "Desconocido");
+                String fechaOriginal = reporte.optString("fechaReporte", "");
+                String fecha = "Sin fecha";
+                String hora = "Sin hora";
+
+                if (fechaOriginal.length() >= 10) {
+                    String anio = fechaOriginal.substring(0, 4);
+                    String mes = fechaOriginal.substring(5, 7);
+                    String dia = fechaOriginal.substring(8, 10);
+
+                    fecha = dia + "/" + mes + "/" + anio;
+
+                    if (fechaOriginal.length() >= 16) {
+                        hora = fechaOriginal.substring(11, 16);
+                    }
+                }
+
                 marcador.setTitle(reporte.optString("tipoObstaculo", "Obstáculo"));
-                marcador.setSnippet(reporte.optString("descripcion", "Sin descripción"));
+
+                marcador.setSnippet(
+                        "<b>Descripción:</b> " + android.text.TextUtils.htmlEncode(descripcion) +
+                                "<br><br><b>Estado:</b> " + estado +
+                                "<br><b>Fecha:</b> " + fecha +
+                                "<br><b>Hora:</b> " + hora
+                );
 
                 mapView.getOverlays().add(marcador);
                 marcadoresReportes.add(marcador);
@@ -455,7 +479,6 @@ public class HomeActivity extends BaseActivity {
             mapView.invalidate();
         });
     }
-
 
     private void irAlLogin() {
         Intent intent = new Intent(this, LoginActivity.class);
