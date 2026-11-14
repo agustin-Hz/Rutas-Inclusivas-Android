@@ -444,6 +444,16 @@ public class HomeActivity extends BaseActivity {
                     continue;
                 }
 
+                String ubicacionTexto = reporte.optString("ubicacionTexto", "").trim();
+                String detalleUbicacion;
+
+                if (ubicacionTexto.isEmpty() || ubicacionTexto.equalsIgnoreCase("null")) {
+                    detalleUbicacion = "<b>Ubicación GPS:</b> " + latitud + ", " + longitud;
+                } else {
+                    detalleUbicacion = "<b>Ubicación:</b> " +
+                            android.text.TextUtils.htmlEncode(ubicacionTexto);
+                }
+
                 Marker marcador = new Marker(mapView);
                 marcador.setPosition(new GeoPoint(latitud, longitud));
                 String descripcion = reporte.optString("descripcion", "Sin descripción");
@@ -470,7 +480,8 @@ public class HomeActivity extends BaseActivity {
                         "<b>Descripción:</b> " + android.text.TextUtils.htmlEncode(descripcion) +
                                 "<br><br><b>Estado:</b> " + estado +
                                 "<br><b>Fecha:</b> " + fecha +
-                                "<br><b>Hora:</b> " + hora
+                                "<br><b>Hora:</b> " + hora +
+                                "<br><br>" + detalleUbicacion
                 );
 
                 mapView.getOverlays().add(marcador);
