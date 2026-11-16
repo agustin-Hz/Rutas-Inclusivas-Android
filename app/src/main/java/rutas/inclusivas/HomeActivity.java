@@ -350,23 +350,65 @@ public class HomeActivity extends BaseActivity {
 
         super.onPause();
     }
+
     private void mostrarDialogoReportar() {
-        final android.widget.EditText input = new android.widget.EditText(this);
-        input.setHint("Ej: Rampa rota o bloqueada");
+
+        String[] tipos = {
+                "Vereda rota",
+                "Rampa rota o bloqueada",
+                "Vereda obstruida",
+                "Semáforo sonoro averiado",
+                "Obra sin paso accesible"
+        };
+
+        android.widget.Spinner selectorTipo = new android.widget.Spinner(this);
+
+        android.widget.ArrayAdapter<String> adaptador =
+                new android.widget.ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        tipos
+                );
+
+        adaptador.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+
+        selectorTipo.setAdapter(adaptador);
+
+        android.widget.EditText input = new android.widget.EditText(this);
+        input.setHint("Describí el obstáculo encontrado");
+
+        android.widget.TextView etiqueta = new android.widget.TextView(this);
+        etiqueta.setText("Tipo de obstáculo:");
+
+        android.widget.LinearLayout contenido = new android.widget.LinearLayout(this);
+
+        contenido.setOrientation(android.widget.LinearLayout.VERTICAL);
+
+        int margen = (int) (20 * getResources().getDisplayMetrics().density);
+        contenido.setPadding(margen, 10, margen, 10);
+
+        contenido.addView(etiqueta);
+        contenido.addView(selectorTipo);
+        contenido.addView(input);
 
         new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Reportar Obstáculo")
-                .setMessage("Ingresá la descripción del obstáculo:")
-                .setView(input)
+                .setTitle("Reportar obstáculo")
+                .setView(contenido)
                 .setPositiveButton("Enviar", (dialog, which) -> {
                     String desc = input.getText().toString().trim();
-                    if (!desc.isEmpty()) enviarReporteApi(desc);
+                    if (!desc.isEmpty()) {
+                        int idTipo = selectorTipo.getSelectedItemPosition() + 1;
+                        enviarReporteApi(desc, idTipo);
+                    }
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
 
-    private void enviarReporteApi(String desc) {
+
+    private void enviarReporteApi(String desc, int idTipo) {
         if (latitudActual == null || longitudActual == null) {
             android.widget.Toast.makeText(
                     this,
@@ -378,7 +420,7 @@ public class HomeActivity extends BaseActivity {
 
         org.json.JSONObject json = new org.json.JSONObject();
         try {
-            json.put("ID_Tipo", 1);
+            json.put("ID_Tipo", idTipo);
             json.put("Descripcion", desc);
             json.put("Latitud", latitudActual);
             json.put("Longitud", longitudActual);

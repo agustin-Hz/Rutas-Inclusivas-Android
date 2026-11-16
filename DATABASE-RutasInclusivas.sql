@@ -80,3 +80,15 @@ ADD COLUMN PinExpiraEn DATETIME NULL;
 
 ALTER TABLE USUARIOS
 ADD COLUMN IntentosPin INT NOT NULL DEFAULT 0;
+
+-- Carga inicial de tipos de obstáculos
+-- Estos IDs corresponden a las categorías del formulario Android.
+
+INSERT INTO TIPOS_OBSTACULO (ID_Tipo, Nombre, Descripcion)
+VALUES
+(1, 'Vereda rota', 'Veredas deterioradas que dificultan la circulación peatonal'),
+(2, 'Rampa rota o bloqueada', 'Rampas dañadas u obstruidas que impiden el acceso'),
+(3, 'Vereda obstruida', 'Obstáculos que bloquean la circulación por la vereda'),
+(4, 'Semáforo sonoro averiado', 'Semáforos con señalización sonora fuera de servicio'),
+(5, 'Obra sin paso accesible', 'Obras que impiden el paso seguro de peatones')
+ON DUPLICATE KEY UPDATE ID_Tipo = ID_Tipo;
