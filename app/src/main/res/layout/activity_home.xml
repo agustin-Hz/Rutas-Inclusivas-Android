@@ -202,17 +202,32 @@
         </LinearLayout>
 
     </LinearLayout>
-    <Button
-        android:id="@+id/btnCerrarSesion"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="12dp"
-        android:text="@string/cerrar_sesion"
-        android:textColor="#0755A6"
-        android:textSize="14sp"
-        android:backgroundTint="#DCEBFF" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
 
+        <Button
+            android:id="@+id/btnMiPerfil"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="@string/mi_perfil"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:backgroundTint="#0866D9" />
 
-
-
+        <Button
+            android:id="@+id/btnCerrarSesion"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:text="@string/cerrar_sesion"
+            android:textColor="#0755A6"
+            android:textSize="14sp"
+            android:backgroundTint="#DCEBFF" />
+    </LinearLayout>
 </LinearLayout>

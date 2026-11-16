@@ -47,6 +47,8 @@ import org.json.JSONObject;
 public class HomeActivity extends BaseActivity {
 
     private MapView mapView;
+    private TextView tvSaludo;
+    private TextView tvDatos;
     private FusedLocationProviderClient fusedLocationClient;
     private Double latitudActual = null;
     private Double longitudActual = null;
@@ -87,10 +89,6 @@ public class HomeActivity extends BaseActivity {
                         }
                 );
 
-
-
-
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.home), (v, insets) -> {
@@ -110,8 +108,12 @@ public class HomeActivity extends BaseActivity {
         verificarPermisosUbicacion();
         cargarReportesEnMapa();
 
-        TextView tvSaludo = findViewById(R.id.tvSaludo);
-        TextView tvDatos = findViewById(R.id.tvDatos);
+        tvSaludo = findViewById(R.id.tvSaludo);
+        tvDatos = findViewById(R.id.tvDatos);
+        Button btnMiPerfil = findViewById(R.id.btnMiPerfil);
+        btnMiPerfil.setOnClickListener(v ->
+                startActivity(new Intent(HomeActivity.this, PerfilActivity.class)));
+
         Button btnCerrar = findViewById(R.id.btnCerrarSesion);
 
         // Acceso rápido: buscar destino
@@ -155,18 +157,20 @@ public class HomeActivity extends BaseActivity {
             startActivity(primera);
         }
 
-        // Saludo y datos del usuario
-        tvSaludo.setText(getString(R.string.home_saludo, sesion.getNombre()));
-        String zona = sesion.getZona();
-        tvDatos.setText(zona.isEmpty()
-                ? sesion.getCorreo()
-                : getString(R.string.home_datos, sesion.getCorreo(), zona));
-
         // Cerrar sesión
         btnCerrar.setOnClickListener(v -> {
             sesion.cerrarSesion();
             irAlLogin();
         });
+    }
+
+    private void mostrarDatosUsuario() {
+        SessionManager sesion = new SessionManager(this);
+        tvSaludo.setText(getString(R.string.home_saludo, sesion.getNombre()));
+        String zona = sesion.getZona();
+        tvDatos.setText(zona.isEmpty()
+                ? sesion.getCorreo()
+                : getString(R.string.home_datos, sesion.getCorreo(), zona));
     }
 
     private void inicializarMapa() {
@@ -332,6 +336,9 @@ public class HomeActivity extends BaseActivity {
 
         if (mapView != null) {
             mapView.onResume();
+        }
+        if (tvSaludo != null) {
+            mostrarDatosUsuario();
         }
     }
 
