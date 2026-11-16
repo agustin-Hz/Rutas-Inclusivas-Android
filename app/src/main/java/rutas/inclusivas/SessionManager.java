@@ -46,6 +46,12 @@ public class SessionManager {
     public String getCorreo() { return prefs.getString(K_CORREO, ""); }
     public String getZona() { return prefs.getString(K_ZONA, ""); }
 
+    public void actualizarDatos(String correo, String zona) {
+        prefs.edit()
+                .putString(K_CORREO, correo)
+                .putString(K_ZONA, zona == null ? "" : zona)
+                .apply();
+    }
     public void cerrarSesion() {
         prefs.edit().clear().apply();
     }

@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/perfil"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8FAFF"
+    tools:context=".PerfilActivity">
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp">
+
+            <!-- Título -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:accessibilityHeading="true"
+                android:gravity="center"
+                android:text="@string/perfil_titulo"
+                android:textColor="#123B70"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:text="@string/perfil_subtitulo"
+                android:textColor="#526780"
+                android:textSize="16sp" />
+
+            <!-- Nombre de usuario (solo lectura) -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="@string/label_nombre_usuario"
+                android:textColor="#123B70"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvNombrePerfil"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="#EAF1FB"
+                android:gravity="center_vertical"
+                android:minHeight="48dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:textColor="#123B70"
+                android:textSize="16sp"
+                tools:text="lucas27" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/perfil_nombre_no_editable"
+                android:textColor="#6B7F99"
+                android:textSize="12sp" />
+
+            <!-- Correo -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:labelFor="@id/etCorreoPerfil"
+                android:text="@string/label_correo"
+                android:textColor="#123B70"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etCorreoPerfil"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:autofillHints="emailAddress"
+                android:backgroundTint="#0866D9"
+                android:imeOptions="actionNext"
+                android:inputType="textEmailAddress"
+                android:maxLength="100"
+                android:maxLines="1"
+                android:padding="14dp"
+                android:textColor="#123B70"
+                android:textColorHint="#6B7F99"
+                android:textSize="16sp" />
+
+            <!-- Zona -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:labelFor="@id/etZonaPerfil"
+                android:text="@string/label_zona"
+                android:textColor="#123B70"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etZonaPerfil"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:autofillHints="postalAddress"
+                android:backgroundTint="#0866D9"
+                android:hint="@string/hint_zona"
+                android:imeOptions="actionDone"
+                android:inputType="textCapWords"
+                android:maxLength="100"
+                android:maxLines="1"
+                android:padding="14dp"
+                android:textColor="#123B70"
+                android:textColorHint="#6B7F99"
+                android:textSize="16sp" />
+
+            <!-- Guardar / Volver -->
+            <Button
+                android:id="@+id/btnGuardarPerfil"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="28dp"
+                android:backgroundTint="#0866D9"
+                android:text="@string/perfil_guardar"
+                android:textColor="#FFFFFF"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnVolverPerfil"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#DCEBFF"
+                android:text="@string/acc_volver"
+                android:textColor="#0755A6" />
+
+            <!-- Separador -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="32dp"
+                android:background="#D6DFEB" />
+
+            <!-- Dar de baja -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:accessibilityHeading="true"
+                android:text="@string/perfil_baja_seccion"
+                android:textColor="#B42318"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/perfil_baja_detalle"
+                android:textColor="#526780"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btnBajaCuenta"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#FDECEA"
+                android:text="@string/perfil_baja_boton"
+                android:textColor="#B42318" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

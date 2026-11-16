@@ -41,7 +41,6 @@
     <string name="registro_exitoso">¡Cuenta creada! Ya podés iniciar sesión.</string>
 
     <!-- Recuperar contraseña -->
-    <!-- Recuperar contraseña -->
     <string name="recuperar_titulo">Recuperar contraseña</string>
     <string name="recuperar_no_disponible">Esta función todavía no está disponible. Estamos trabajando en ella.</string>
     <string name="recuperar_instruccion">Ingresá tu correo para recuperar la contraseña:</string>
@@ -100,4 +99,22 @@
     <string name="error_respuesta_invalida">Respuesta inesperada del servidor</string>
     <string name="error_servidor">Ocurrió un error en el servidor. Intentá más tarde.</string>
 
+    <string name="mi_perfil">Mi perfil</string>
+    <string name="perfil_titulo">Mi perfil</string>
+    <string name="perfil_subtitulo">Consultá y actualizá los datos de tu cuenta.</string>
+    <string name="perfil_nombre_no_editable">El nombre de usuario no se puede modificar.</string>
+    <string name="perfil_guardar">Guardar cambios</string>
+    <string name="perfil_guardando">Guardando…</string>
+    <string name="perfil_guardado">Datos actualizados</string>
+    <string name="perfil_sin_cambios">No hay cambios para guardar</string>
+    <string name="perfil_correo_en_uso">Ese correo ya está registrado en otra cuenta</string>
+    <string name="perfil_datos_locales">Sin conexión: se muestran los últimos datos guardados</string>
+    <string name="perfil_baja_seccion">Dar de baja la cuenta</string>
+    <string name="perfil_baja_detalle">Tu cuenta quedará desactivada y no vas a poder iniciar sesión. Los obstáculos que reportaste seguirán visibles en el mapa.</string>
+    <string name="perfil_baja_boton">Dar de baja mi cuenta</string>
+    <string name="perfil_baja_titulo">¿Dar de baja tu cuenta?</string>
+    <string name="perfil_baja_mensaje">No vas a poder volver a iniciar sesión con esta cuenta.</string>
+    <string name="perfil_baja_confirmar">Dar de baja</string>
+    <string name="perfil_baja_cancelar">Cancelar</string>
+    <string name="perfil_baja_ok">Tu cuenta fue dada de baja</string>
 </resources>
