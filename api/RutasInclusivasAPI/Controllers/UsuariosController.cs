@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using RutasInclusivasAPI.Models;
-using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace RutasInclusivasAPI.Controllers
@@ -11,14 +11,16 @@ namespace RutasInclusivasAPI.Controllers
     public class UsuariosController : ControllerBase
     {
         private readonly string _cadenaConexion;
+        private readonly ILogger<UsuariosController> _logger;
 
-        public UsuariosController(IConfiguration config)
+        public UsuariosController(IConfiguration config, ILogger<UsuariosController> logger)
         {
-            // Toma la conexión del appsettings.json
-            _cadenaConexion = config.GetConnectionString("ConexionMySQL") ?? throw new InvalidOperationException("Falta la cadena de conexión ConexionMySQL.");
+            _cadenaConexion = config.GetConnectionString("ConexionMySQL")
+                ?? throw new InvalidOperationException("Falta la cadena de conexión ConexionMySQL.");
+            _logger = logger;
         }
 
-        // 1. ALTA (POST)
+        // 1. ALTA (POST) - api/Usuarios
         [HttpPost]
         public async Task<IActionResult> RegistrarUsuario([FromBody] UsuarioRegistro usuario)
         {
@@ -48,130 +50,188 @@ namespace RutasInclusivasAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "Error al registrar", detalle = ex.Message });
+                _logger.LogError(ex, "Error al registrar usuario");
+                return StatusCode(500, new { error = "Error al registrar" });
             }
         }
 
-        // 2. MODIFICACIÓN (PUT)
-        [HttpPut("{id:int}")]
+        // 2. CONSULTA (GET) - api/Usuarios/{id}
+        // Devuelve los datos del perfil. Solo el dueño de la cuenta puede verlos.
+        [HttpGet("{id:int}")]
         [Authorize]
-        public IActionResult ModificarUsuario(int id, [FromBody] UsuarioRegistro usuario)
+        public async Task<IActionResult> ObtenerUsuario(int id)
         {
             if (!EsElMismoUsuario(id))
-                return StatusCode(403, new { mensaje = "No podés modificar la cuenta de otro usuario" });
+                return StatusCode(403, new { mensaje = "No podés ver los datos de otro usuario" });
 
             try
             {
                 using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
                 {
-                    conexion.Open();
-                    // Modificamos el correo y la zona según el ID_Usuario[cite: 1]
-                    string query = "UPDATE USUARIOS SET Correo = @Correo, Zona = @Zona WHERE ID_Usuario = @Id";
+                    await conexion.OpenAsync();
+
+                    string query = @"SELECT ID_Usuario, Nombre_Usuario, Correo, Zona
+                                     FROM USUARIOS
+                                     WHERE ID_Usuario = @Id AND Activo = TRUE";
 
                     using (MySqlCommand comando = new MySqlCommand(query, conexion))
                     {
-                        comando.Parameters.AddWithValue("@Correo", usuario.Correo);
-                        comando.Parameters.AddWithValue("@Zona", usuario.Zona);
                         comando.Parameters.AddWithValue("@Id", id);
 
-                        int filas = comando.ExecuteNonQuery();
-                        if (filas == 0) return NotFound(new { mensaje = "Usuario no encontrado" });
+                        using (var lector = await comando.ExecuteReaderAsync())
+                        {
+                            if (!await lector.ReadAsync())
+                                return NotFound(new { mensaje = "Usuario no encontrado" });
+
+                            int posZona = lector.GetOrdinal("Zona");
+
+                            return Ok(new
+                            {
+                                id = lector.GetInt32("ID_Usuario"),
+                                nombre = lector.GetString("Nombre_Usuario"),
+                                correo = lector.GetString("Correo"),
+                                zona = lector.IsDBNull(posZona) ? null : lector.GetString(posZona)
+                            });
+                        }
                     }
                 }
-                return Ok(new { mensaje = "Usuario modificado correctamente" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "Error al modificar", detalle = ex.Message });
+                _logger.LogError(ex, "Error al obtener usuario {Id}", id);
+                return StatusCode(500, new { error = "Error al obtener los datos" });
             }
         }
 
-        // 3. BAJA (DELETE) BAJA FISICA
-        [HttpDelete("{id:int}/fisica")]
+        // 3. MODIFICACIÓN (PUT) - api/Usuarios/{id}
+        // usa UsuarioModificacion (solo correo y zona)
+        // responde 409 si el correo ya está en uso y devuelve los datos guardados.
+        [HttpPut("{id:int}")]
         [Authorize]
-        public IActionResult EliminarUsuario(int id)
+        public async Task<IActionResult> ModificarUsuario(int id, [FromBody] UsuarioModificacion datos)
         {
             if (!EsElMismoUsuario(id))
                 return StatusCode(403, new { mensaje = "No podés modificar la cuenta de otro usuario" });
+
+            string correo = datos.Correo.Trim();
+            string? zona = string.IsNullOrWhiteSpace(datos.Zona) ? null : datos.Zona.Trim();
+
             try
             {
                 using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
                 {
-                    conexion.Open();
-                    // Al borrar, el ON DELETE CASCADE de tu base de datos borrará sus reportes automáticamente[cite: 1]
+                    await conexion.OpenAsync();
+
+                    string query = @"UPDATE USUARIOS
+                                     SET Correo = @Correo, Zona = @Zona
+                                     WHERE ID_Usuario = @Id AND Activo = TRUE";
+
+                    using (MySqlCommand comando = new MySqlCommand(query, conexion))
+                    {
+                        comando.Parameters.AddWithValue("@Correo", correo);
+                        comando.Parameters.AddWithValue("@Zona", (object?)zona ?? DBNull.Value);
+                        comando.Parameters.AddWithValue("@Id", id);
+
+                        int filas = await comando.ExecuteNonQueryAsync();
+                        if (filas == 0)
+                            return NotFound(new { mensaje = "Usuario no encontrado" });
+                    }
+                }
+
+                return Ok(new
+                {
+                    mensaje = "Datos actualizados correctamente",
+                    usuario = new { id, correo, zona }
+                });
+            }
+            catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
+            {
+                return Conflict(new { mensaje = "Ese correo ya está registrado en otra cuenta." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al modificar usuario {Id}", id);
+                return StatusCode(500, new { error = "Error al modificar" });
+            }
+        }
+
+        // 4. BAJA FÍSICA (DELETE) - api/Usuarios/{id}/fisica
+        // Borra la cuenta y, por ON DELETE CASCADE, todos sus reportes. Por el momento no se utiliza.
+        [HttpDelete("{id:int}/fisica")]
+        [Authorize]
+        public async Task<IActionResult> EliminarUsuario(int id)
+        {
+            if (!EsElMismoUsuario(id))
+                return StatusCode(403, new { mensaje = "No podés dar de baja la cuenta de otro usuario" });
+
+            try
+            {
+                using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
+                {
+                    await conexion.OpenAsync();
                     string query = "DELETE FROM USUARIOS WHERE ID_Usuario = @Id";
 
                     using (MySqlCommand comando = new MySqlCommand(query, conexion))
                     {
                         comando.Parameters.AddWithValue("@Id", id);
 
-                        int filas = comando.ExecuteNonQuery();
-                        if (filas == 0) return NotFound(new { mensaje = "Usuario no encontrado" });
+                        int filas = await comando.ExecuteNonQueryAsync();
+                        if (filas == 0)
+                            return NotFound(new { mensaje = "Usuario no encontrado" });
                     }
                 }
                 return Ok(new { mensaje = "Usuario eliminado correctamente" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "Error al eliminar", detalle = ex.Message });
+                _logger.LogError(ex, "Error al eliminar usuario {Id}", id);
+                return StatusCode(500, new { error = "Error al eliminar" });
             }
         }
 
-        // 4. BAJA (DELETE) BAJA LOGICA
+        // 5. BAJA LÓGICA (DELETE) - api/Usuarios/{id}/logica
+        // Desactiva la cuenta (Activo = FALSE). Es la que se utiliza desde la app.
         [HttpDelete("{id:int}/logica")]
         [Authorize]
-        public IActionResult EliminarUsuarioLogica(int id)
+        public async Task<IActionResult> EliminarUsuarioLogica(int id)
         {
             if (!EsElMismoUsuario(id))
-                return StatusCode(403, new { mensaje = "No podés modificar la cuenta de otro usuario" });
+                return StatusCode(403, new { mensaje = "No podés dar de baja la cuenta de otro usuario" });
 
             try
             {
                 using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
                 {
-                    conexion.Open();
+                    await conexion.OpenAsync();
 
-                    string query = @"
-                        UPDATE USUARIOS
-                        SET Activo = FALSE
-                        WHERE ID_Usuario = @Id
-                        AND Activo = TRUE";
+                    string query = @"UPDATE USUARIOS
+                                     SET Activo = FALSE
+                                     WHERE ID_Usuario = @Id AND Activo = TRUE";
 
                     using (MySqlCommand comando = new MySqlCommand(query, conexion))
                     {
                         comando.Parameters.AddWithValue("@Id", id);
 
-                        int filas = comando.ExecuteNonQuery();
+                        int filas = await comando.ExecuteNonQueryAsync();
                         if (filas == 0)
-                        {
-                            return NotFound(new
-                            {
-                                mensaje = "Usuario no encontrado o ya inactivo"
-                            });
-                        }
+                            return NotFound(new { mensaje = "Usuario no encontrado o ya inactivo" });
                     }
                 }
 
-                return Ok(new
-                {
-                    mensaje = "Usuario eliminado logicamente"
-                });
+                return Ok(new { mensaje = "Cuenta dada de baja correctamente" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    error = "Error al dar de baja al usuario",
-                    detalle = ex.Message
-                });
+                _logger.LogError(ex, "Error al dar de baja usuario {Id}", id);
+                return StatusCode(500, new { error = "Error al dar de baja al usuario" });
             }
         }
 
+        // Devuelve true si el usuario del token es el mismo que el {id} de la URL.
         private bool EsElMismoUsuario(int id)
         {
             string? idTexto = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
             return int.TryParse(idTexto, out int idToken) && idToken == id;
         }
-
     }
 }
