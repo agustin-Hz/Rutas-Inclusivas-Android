@@ -346,4 +346,105 @@ namespace RutasInclusivasAPI.Controllers
             }
         }
     }
-}
+    
+        //VALIDAR VOTO DE USUARIO EN VALIDAR REPORTES
+    [HttpPost("validar")]
+        [Authorize]
+        public async Task<IActionResult> ValidarObstaculo([FromBody] ValidacionRegistro request)
+        {
+            // 1.Obtenemos el ID del usuario desde su token
+            string? idTexto = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+            if (!int.TryParse(idTexto, out int idUsuario))
+            {
+                return Unauthorized(new { mensaje = "Usuario no identificado" });
+            }
+
+            if (request.IdReporte <= 0 || string.IsNullOrEmpty(request.TipoVoto))
+            {
+                return BadRequest(new { mensaje = "Datos de validación incompletos." });
+            }
+
+            try
+            {
+                using (MySqlConnection conexion = new MySqlConnection(_cadenaConexion))
+                {
+                    await conexion.OpenAsync();
+
+                    // 2. Validar que el usuario no haya votado previamente
+                    string checkQuery = "SELECT COUNT(*) FROM VALIDACIONES_REPORTE WHERE ID_Reporte = @IdReporte AND ID_Usuario = @IdUsuario";
+                    using (MySqlCommand checkCmd = new MySqlCommand(checkQuery, conexion))
+                    {
+                        checkCmd.Parameters.AddWithValue("@IdReporte", request.IdReporte);
+                        checkCmd.Parameters.AddWithValue("@IdUsuario", idUsuario);
+
+                        int existeVoto = Convert.ToInt32(await checkCmd.ExecuteScalarAsync());
+                        if (existeVoto > 0)
+                        {
+                            return BadRequest(new { mensaje = "Ya has validado este reporte anteriormente." });
+                        }
+                    }
+
+                    // 3. Registrar la interacción
+                    string insertQuery = @"INSERT INTO VALIDACIONES_REPORTE (ID_Reporte, ID_Usuario, Tipo_Voto, Comentario_Evidencia) 
+                                           VALUES (@IdReporte, @IdUsuario, @TipoVoto, @Comentario)";
+                    using (MySqlCommand insertCmd = new MySqlCommand(insertQuery, conexion))
+                    {
+                        insertCmd.Parameters.AddWithValue("@IdReporte", request.IdReporte);
+                        insertCmd.Parameters.AddWithValue("@IdUsuario", idUsuario);
+                        insertCmd.Parameters.AddWithValue("@TipoVoto", request.TipoVoto);
+                        insertCmd.Parameters.AddWithValue("@Comentario", (object?)request.ComentarioEvidencia ?? DBNull.Value);
+
+                        await insertCmd.ExecuteNonQueryAsync();
+                    }
+
+                    // 4. Evaluar umbrales
+                    string countQuery = "SELECT Tipo_Voto, COUNT(*) as Total FROM VALIDACIONES_REPORTE WHERE ID_Reporte = @IdReporte GROUP BY Tipo_Voto";
+                    int votosPositivos = 0;
+                    int votosNegativos = 0;
+
+                    using (MySqlCommand countCmd = new MySqlCommand(countQuery, conexion))
+                    {
+                        countCmd.Parameters.AddWithValue("@IdReporte", request.IdReporte);
+                        using (var lector = await countCmd.ExecuteReaderAsync())
+                        {
+                            while (await lector.ReadAsync())
+                            {
+                                string tipo = lector.GetString("Tipo_Voto");
+                                int total = lector.GetInt32("Total");
+
+                                if (tipo == "Sigue existiendo") votosPositivos = total;
+                                if (tipo == "Ya no existe") votosNegativos = total;
+                            }
+                        }
+                    }
+
+                    // 5. Actualizar estado si se alcanzan los umbrales (ej. 3 votos)
+                    string? nuevoEstado = null;
+                    if (votosNegativos >= 3) nuevoEstado = "Solucionado";
+                    else if (votosPositivos >= 3) nuevoEstado = "Verificado";
+
+                    if (nuevoEstado != null)
+                    {
+                        string updateQuery = "UPDATE REPORTES SET Estado = @NuevoEstado WHERE ID_Reporte = @IdReporte AND Estado != @NuevoEstado";
+                        using (MySqlCommand updateCmd = new MySqlCommand(updateQuery, conexion))
+                        {
+                            updateCmd.Parameters.AddWithValue("@NuevoEstado", nuevoEstado);
+                            updateCmd.Parameters.AddWithValue("@IdReporte", request.IdReporte);
+                            await updateCmd.ExecuteNonQueryAsync();
+                        }
+                    }
+
+                    return Ok(new
+                    {
+                        mensaje = "Gracias por tu aporte. Validación registrada.",
+                        estadoActualizado = nuevoEstado
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al procesar la validación", detalle = ex.Message });
+            }
+        }
+    }
