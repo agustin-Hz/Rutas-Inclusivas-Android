@@ -3,6 +3,7 @@ package rutas.inclusivas;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import org.json.JSONArray;
 
@@ -28,6 +29,8 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.views.overlay.Marker;
 import android.widget.ImageButton;
+import org.osmdroid.views.overlay.Polyline;
+import android.graphics.Color;
 
 /** Importo lo nececario para trabajar con la ubicación. */
 
@@ -50,11 +53,20 @@ import java.util.List;
 
 import org.json.JSONObject;
 
+import android.widget.LinearLayout;
+import android.view.View;
+import java.util.Locale;
 
 
 public class HomeActivity extends BaseActivity {
 
     private MapView mapView;
+    private Polyline rutaDibujada;
+
+    // Panel de información de la ruta.
+    private LinearLayout panelRuta;
+    private TextView tvDistanciaRuta;
+    private TextView tvTiempoRuta;
     private TextView tvSaludo;
     private TextView tvDatos;
     private FusedLocationProviderClient fusedLocationClient;
@@ -63,6 +75,15 @@ public class HomeActivity extends BaseActivity {
     private final List<Marker> marcadoresReportes = new ArrayList<>();
     private ActivityResultLauncher<String[]> solicitarPermisosUbicacion;
     private CancellationTokenSource tokenUbicacion;
+
+    // Permite abrir BuscarDestinoActivity y recibir su resultado.
+    private ActivityResultLauncher<Intent> buscarDestinoLauncher;
+
+    // Datos del destino seleccionado.
+    private String nombreDestinoSeleccionado;
+    private String direccionDestinoSeleccionado;
+    private double latitudDestinoSeleccionado;
+    private double longitudDestinoSeleccionado;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +100,11 @@ public class HomeActivity extends BaseActivity {
 
         setContentView(R.layout.activity_home);
 
+        // Vinculamos el panel de información de la ruta.
+        panelRuta = findViewById(R.id.panelRuta);
+        tvDistanciaRuta = findViewById(R.id.tvDistanciaRuta);
+        tvTiempoRuta = findViewById(R.id.tvTiempoRuta);
+
         solicitarPermisosUbicacion =
                 registerForActivityResult(
                         new ActivityResultContracts.RequestMultiplePermissions(),
@@ -94,6 +120,58 @@ public class HomeActivity extends BaseActivity {
 
                             if (ubicacionPrecisa || ubicacionAproximada) {
                                 obtenerUbicacion();
+                            }
+                        }
+                );
+
+        buscarDestinoLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.StartActivityForResult(),
+                        resultado -> {
+
+                            // Comprobamos que BuscarDestinoActivity
+                            // haya devuelto un resultado correcto.
+                            if (resultado.getResultCode() == RESULT_OK) {
+
+                                Intent datos = resultado.getData();
+
+                                if (datos != null) {
+
+                                    // Recuperamos los datos del destino.
+                                    nombreDestinoSeleccionado =
+                                            datos.getStringExtra("nombre");
+
+                                    direccionDestinoSeleccionado =
+                                            datos.getStringExtra("direccion");
+
+                                    latitudDestinoSeleccionado =
+                                            datos.getDoubleExtra("latitud", Double.NaN);
+
+                                    longitudDestinoSeleccionado =
+                                            datos.getDoubleExtra("longitud", Double.NaN);
+
+                                    // Comprobamos que recibimos las coordenadas.
+                                    if (Double.isNaN(latitudDestinoSeleccionado)
+                                            || Double.isNaN(longitudDestinoSeleccionado)) {
+
+                                        Toast.makeText(
+                                                this,
+                                                "No se recibieron las coordenadas del destino",
+                                                Toast.LENGTH_SHORT
+                                        ).show();
+
+                                        return;
+                                    }
+
+                                    Toast.makeText(
+                                            this,
+                                            "Destino recibido: " + nombreDestinoSeleccionado,
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+
+                                    // Ya tenemos el destino. Solicitamos una ubicación actualizada.
+                                    obtenerUbicacion();
+                                }
                             }
                         }
                 );
@@ -130,9 +208,13 @@ public class HomeActivity extends BaseActivity {
                 findViewById(R.id.btnBuscarDestinoHome);
 
         btnBuscarDestinoHome.setOnClickListener(v -> {
-            startActivity(
-                    new Intent(HomeActivity.this, BuscarDestinoActivity.class)
+
+            Intent intent = new Intent(
+                    HomeActivity.this,
+                    BuscarDestinoActivity.class
             );
+
+            buscarDestinoLauncher.launch(intent);
         });
 
         // Acceso rápido: reportar obstáculo
@@ -310,6 +392,13 @@ public class HomeActivity extends BaseActivity {
 
                 centrarMapaEnUsuario(latitud, longitud);
 
+                // Si ya seleccionamos un destino, calculamos la ruta.
+                if (!Double.isNaN(latitudDestinoSeleccionado)
+                        && !Double.isNaN(longitudDestinoSeleccionado)) {
+
+                    solicitarRuta();
+                }
+
             } else {
 
                 android.widget.Toast.makeText(
@@ -388,6 +477,122 @@ public class HomeActivity extends BaseActivity {
             mapView.onDetach();
         }
         super.onDestroy();
+    }
+
+    private void solicitarRuta() {
+
+        // Verificamos que tengamos las coordenadas necesarias.
+        if (latitudActual == null || longitudActual == null) {
+            Toast.makeText(
+                    this,
+                    "Todavía no tenemos tu ubicación",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        if (Double.isNaN(latitudDestinoSeleccionado)
+                || Double.isNaN(longitudDestinoSeleccionado)) {
+
+            Toast.makeText(
+                    this,
+                    "No hay un destino seleccionado",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        // Solicitamos el cálculo al backend.
+        ApiClient.calcularRuta(
+                latitudActual,
+                longitudActual,
+                latitudDestinoSeleccionado,
+                longitudDestinoSeleccionado,
+                (ruta, error) -> {
+
+                    if (!activityViva()) {
+                        return;
+                    }
+
+                    if (error != null) {
+                        Toast.makeText(
+                                this,
+                                error,
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        return;
+                    }
+
+                    // Dibujamos la ruta recibida.
+                    dibujarRuta(ruta);
+                }
+        );
+    }
+
+    private void dibujarRuta(Ruta ruta) {
+
+        if (ruta == null || ruta.getPuntos().isEmpty()) {
+            Toast.makeText(
+                    this,
+                    "La ruta no contiene puntos para dibujar",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        // Convertimos los puntos recibidos en GeoPoints.
+        List<GeoPoint> puntosMapa = new ArrayList<>();
+
+        for (PuntoRuta punto : ruta.getPuntos()) {
+
+            GeoPoint coordenada = new GeoPoint(
+                    punto.getLatitud(),
+                    punto.getLongitud()
+            );
+
+            puntosMapa.add(coordenada);
+        }
+
+        // Eliminamos la ruta anterior, si existía.
+        if (rutaDibujada != null) {
+            mapView.getOverlays().remove(rutaDibujada);
+        }
+
+        // Creamos una nueva línea.
+        rutaDibujada = new Polyline();
+
+        rutaDibujada.setPoints(puntosMapa);
+
+        rutaDibujada.setColor(Color.BLUE);
+
+        rutaDibujada.setWidth(12f);
+
+        // Agregamos la ruta al mapa.
+        mapView.getOverlays().add(rutaDibujada);
+
+        // Redibujamos el mapa.
+        mapView.invalidate();
+
+        // Mostramos temporalmente los resultados.
+        double distanciaKm = ruta.getDistanciaMetros() / 1000.0;
+
+        int minutos = (int) Math.round(
+                ruta.getDuracionSegundos() / 60.0
+        );
+
+        // Mostramos los datos de la ruta en el panel.
+        tvDistanciaRuta.setText(
+                String.format(Locale.getDefault(), "%.2f km", distanciaKm)
+        );
+
+        tvTiempoRuta.setText(minutos + " min");
+
+// Hacemos visible el panel.
+        panelRuta.setVisibility(View.VISIBLE);
     }
 
     /** La Activity sigue en pantalla y el mapa existe: es seguro tocar la interfaz. */

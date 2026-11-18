@@ -12,6 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +22,15 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+
+
 
 /**
  * Cliente HTTP para hablar con RutasInclusivasAPI.
@@ -48,6 +58,93 @@ public final class ApiClient {
      */
     public static void init(Context contexto) {
         appContext = contexto.getApplicationContext();
+    }
+
+    public interface RutaCallback {
+        void onResult(Ruta ruta, String error);
+    }
+
+    public static void calcularRuta(
+            double latitudOrigen,
+            double longitudOrigen,
+            double latitudDestino,
+            double longitudDestino,
+            RutaCallback callback) {
+
+        try {
+            // Creamos el JSON que espera nuestro backend.
+            JSONObject solicitud = new JSONObject();
+
+            solicitud.put("latitudOrigen", latitudOrigen);
+            solicitud.put("longitudOrigen", longitudOrigen);
+            solicitud.put("latitudDestino", latitudDestino);
+            solicitud.put("longitudDestino", longitudDestino);
+
+            // Enviamos la solicitud POST al backend.
+            ApiClient.post("api/Rutas/calcular", solicitud, response -> {
+
+                if (!response.isSuccess()) {
+                    callback.onResult(
+                            null,
+                            "No se pudo calcular la ruta. Código HTTP: "
+                                    + response.code
+                    );
+                    return;
+                }
+
+                try {
+                    JSONObject json = response.body;
+
+                    double distancia =
+                            json.getDouble("distanciaMetros");
+
+                    double duracion =
+                            json.getDouble("duracionSegundos");
+
+                    JSONArray puntosJson =
+                            json.getJSONArray("puntos");
+
+                    List<PuntoRuta> puntos = new ArrayList<>();
+
+                    for (int i = 0; i < puntosJson.length(); i++) {
+
+                        JSONObject puntoJson =
+                                puntosJson.getJSONObject(i);
+
+                        double latitud =
+                                puntoJson.getDouble("latitud");
+
+                        double longitud =
+                                puntoJson.getDouble("longitud");
+
+                        puntos.add(new PuntoRuta(latitud, longitud));
+                    }
+
+                    // Construimos nuestra ruta completa.
+                    Ruta ruta = new Ruta(
+                            distancia,
+                            duracion,
+                            puntos
+                    );
+
+                    callback.onResult(ruta, null);
+
+                } catch (JSONException e) {
+
+                    callback.onResult(
+                            null,
+                            "Error al interpretar los datos de la ruta."
+                    );
+                }
+            });
+
+        } catch (JSONException e) {
+
+            callback.onResult(
+                    null,
+                    "Error al construir la solicitud de ruta."
+            );
+        }
     }
 
     // Resultado de un pedido

@@ -48,6 +48,16 @@
             android:imeOptions="actionSearch"
             android:textSize="15sp" />
 
+        <!-- ACA SE VAN A MOSTRAR LOS RESULTADOS DE ESA BUSQUEDA -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvDestinos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            android:nestedScrollingEnabled="false" />
+
+
         <!-- Ubicación actual -->
         <Button
             android:id="@+id/btnMiUbicacion"
