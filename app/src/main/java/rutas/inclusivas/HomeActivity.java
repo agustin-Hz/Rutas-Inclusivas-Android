@@ -57,6 +57,12 @@ import android.widget.LinearLayout;
 import android.view.View;
 import java.util.Locale;
 
+import java.util.ArrayList;
+import java.util.List;
+import android.graphics.Color;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.Polyline;
+import org.osmdroid.util.BoundingBox;
 
 public class HomeActivity extends BaseActivity {
 
@@ -74,6 +80,7 @@ public class HomeActivity extends BaseActivity {
     private Double longitudActual = null;
     private final List<Marker> marcadoresReportes = new ArrayList<>();
     private ActivityResultLauncher<String[]> solicitarPermisosUbicacion;
+    private ActivityResultLauncher<Intent> compararRutasLauncher;
     private CancellationTokenSource tokenUbicacion;
 
     // Permite abrir BuscarDestinoActivity y recibir su resultado.
@@ -124,6 +131,45 @@ public class HomeActivity extends BaseActivity {
                         }
                 );
 
+        compararRutasLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                resultado -> {
+
+                    if (resultado.getResultCode() != RESULT_OK) {
+                        return;
+                    }
+
+                    Intent datos = resultado.getData();
+
+                    if (datos == null) {
+                        return;
+                    }
+
+                    double[] latitudes = datos.getDoubleArrayExtra("latitudesRuta");
+                    double[] longitudes = datos.getDoubleArrayExtra("longitudesRuta");
+
+                    if (latitudes == null || longitudes == null) {
+                        return;
+                    }
+
+                    // En el siguiente paso vamos a dibujar la ruta recibida.
+                    if (latitudes.length != longitudes.length || latitudes.length < 2) {
+                        Toast.makeText(this,
+                                "Los datos de la ruta no son válidos.",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    List<GeoPoint> puntosRuta = new ArrayList<>();
+
+                    for (int i = 0; i < latitudes.length; i++) {
+                        puntosRuta.add(new GeoPoint(latitudes[i], longitudes[i]));
+                    }
+
+// Dibujamos la ruta seleccionada.
+                    dibujarRutaEnMapa(puntosRuta);
+                }
+        );
         buscarDestinoLauncher =
                 registerForActivityResult(
                         new ActivityResultContracts.StartActivityForResult(),
@@ -396,7 +442,7 @@ public class HomeActivity extends BaseActivity {
                 if (!Double.isNaN(latitudDestinoSeleccionado)
                         && !Double.isNaN(longitudDestinoSeleccionado)) {
 
-                    solicitarRuta();
+                    abrirCompararRutas();
                 }
 
             } else {
@@ -447,6 +493,29 @@ public class HomeActivity extends BaseActivity {
 
         mapView.invalidate();
     }
+
+    private void dibujarRutaEnMapa(List<GeoPoint> puntos) {
+
+        // Eliminar solamente la ruta anterior.
+        if (rutaDibujada != null) {
+            mapView.getOverlays().remove(rutaDibujada);
+        }
+
+        rutaDibujada = new Polyline();
+        rutaDibujada.setPoints(puntos);
+        rutaDibujada.setColor(Color.BLUE);
+        rutaDibujada.setWidth(12f);
+
+        mapView.getOverlays().add(rutaDibujada);
+
+        // Ajustar el mapa para mostrar toda la ruta.
+        org.osmdroid.views.overlay.Polyline line = rutaDibujada;
+        BoundingBox limites = BoundingBox.fromGeoPoints(puntos);
+        mapView.zoomToBoundingBox(limites, true);
+
+        mapView.invalidate();
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -479,6 +548,35 @@ public class HomeActivity extends BaseActivity {
         super.onDestroy();
     }
 
+    private void abrirCompararRutas() {
+
+        if (latitudActual == null || longitudActual == null) {
+            Toast.makeText(
+                    this,
+                    "Todavía no tenemos tu ubicación",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        Intent intent = new Intent(
+                HomeActivity.this,
+                CompararRutasActivity.class
+        );
+
+        // Datos del origen.
+        intent.putExtra("latitudOrigen", latitudActual);
+        intent.putExtra("longitudOrigen", longitudActual);
+
+        // Datos del destino.
+        intent.putExtra("nombreDestino", nombreDestinoSeleccionado);
+        intent.putExtra("direccionDestino", direccionDestinoSeleccionado);
+        intent.putExtra("latitudDestino", latitudDestinoSeleccionado);
+        intent.putExtra("longitudDestino", longitudDestinoSeleccionado);
+
+        compararRutasLauncher.launch(intent);
+    }
     private void solicitarRuta() {
 
         // Verificamos que tengamos las coordenadas necesarias.
