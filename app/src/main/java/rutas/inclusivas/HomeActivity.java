@@ -11,6 +11,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+/** import necesarios para dialog (validacion de obstaculos) */
+import android.app.Dialog;
+import android.view.Window;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import android.widget.Toast;
+
+
 /** Importo lo nececario para OSMDroid. */
 
 import org.osmdroid.config.Configuration;
@@ -525,6 +537,18 @@ public class HomeActivity extends BaseActivity {
 
                 marcador.setTitle(reporte.optString("tipoObstaculo", "Obstáculo"));
 
+                /** código para guardar el ID del reporte en el marcador y decirle que abra el diálogo DE verificacionDE OBSTACULO al tocarlo: AGUSTIN*/
+                marcador.setId(String.valueOf(reporte.optInt("idReporte", -1)));
+                marcador.setOnMarkerClickListener((marker, mapView) -> {
+                    marker.showInfoWindow(); // Muestra el cartelito normal con la info
+
+                    int id = Integer.parseInt(marker.getId());
+                    if (id != -1) {
+                        mostrarDialogoValidacion(id); // Llama al diálogo que creaste
+                    }
+                    return true;
+                });
+
                 marcador.setSnippet(
                         "<b>Descripción:</b> " + android.text.TextUtils.htmlEncode(descripcion) +
                                 "<br><br><b>Estado:</b> " + estado +
@@ -546,5 +570,78 @@ public class HomeActivity extends BaseActivity {
         startActivity(intent);
         finish();
     }
+    private void mostrarDialogoValidacion(int idReporte) {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_validar_obstaculo);
 
+        // Ajustar el ancho del diálogo
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        Button btnSigue = dialog.findViewById(R.id.btnSigueExistiendo);
+        Button btnNoExiste = dialog.findViewById(R.id.btnYaNoExiste);
+        EditText etComentario = dialog.findViewById(R.id.etComentarioValidacion);
+
+        btnSigue.setOnClickListener(v -> {
+            String comentario = etComentario.getText().toString().trim();
+            enviarValidacionAPI(idReporte, "Sigue existiendo", comentario);
+            dialog.dismiss();
+        });
+
+        btnNoExiste.setOnClickListener(v -> {
+            String comentario = etComentario.getText().toString().trim();
+            enviarValidacionAPI(idReporte, "Ya no existe", comentario);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+    private void enviarValidacionAPI(int idReporte, String tipoVoto, String comentario) {
+        // Reemplaza esto con la forma en que obtienes el token en tu app
+        SessionManager sessionManager = new SessionManager(this);
+        String token = sessionManager.getToken();
+
+        new Thread(() -> {
+            try {
+                // Usa la constante BASE_URL de tu ApiClient si la tienes
+                URL url = new URL("http://192.168.1.41:5126/api/reportes/validar");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; utf-8");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+                conn.setDoOutput(true);
+
+                JSONObject jsonParam = new JSONObject();
+                jsonParam.put("idReporte", idReporte);
+                jsonParam.put("tipoVoto", tipoVoto);
+                jsonParam.put("comentarioEvidencia", comentario.isEmpty() ? null : comentario);
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = jsonParam.toString().getBytes(StandardCharsets.UTF_8);
+                    os.write(input, 0, input.length);
+                }
+
+                int responseCode = conn.getResponseCode();
+
+                runOnUiThread(() -> {
+                    if (responseCode == 200) {
+                        Toast.makeText(this, "¡Gracias! Tu validación fue registrada.", Toast.LENGTH_SHORT).show();
+                        // método para recargar los reportes del mapa
+                        cargarReportesEnMapa();
+                    } else if (responseCode == 400) {
+                        Toast.makeText(this, "No se permiten votos duplicados en el mismo reporte.", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(this, "Error al validar el reporte.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Error de conexión con el servidor.", Toast.LENGTH_SHORT).show()
+                );
+            }
+        }).start();
+    }
 }

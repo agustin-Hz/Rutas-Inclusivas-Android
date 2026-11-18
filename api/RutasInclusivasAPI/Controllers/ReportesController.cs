@@ -34,7 +34,8 @@ namespace RutasInclusivasAPI.Controllers
             if (reporte.ID_Tipo <= 0 ||
                 string.IsNullOrWhiteSpace(reporte.Descripcion))
             {
-                return BadRequest(new {
+                return BadRequest(new
+                {
                     mensaje = "El tipo y la descripción son obligatorios"
                 }
                 );
@@ -44,7 +45,8 @@ namespace RutasInclusivasAPI.Controllers
             if (reporte.Latitud < -90 || reporte.Latitud > 90 ||
                 reporte.Longitud < -180 || reporte.Longitud > 180)
             {
-                return BadRequest(new {
+                return BadRequest(new
+                {
                     mensaje = "Coordenadas inválidas"
                 });
             }
@@ -73,12 +75,14 @@ namespace RutasInclusivasAPI.Controllers
 
                         if (filas != 1)
                         {
-                            return StatusCode(500, new {
+                            return StatusCode(500, new
+                            {
                                 mensaje = "No se pudo guardar el reporte"
                             });
                         }
 
-                        return StatusCode(201, new {
+                        return StatusCode(201, new
+                        {
                             mensaje = "Reporte registrado correctamente",
                             idReporte = comando.LastInsertedId
                         });
@@ -87,13 +91,15 @@ namespace RutasInclusivasAPI.Controllers
             }
             catch (MySqlException ex) when (ex.Number == 1452)
             {
-                return BadRequest(new {
+                return BadRequest(new
+                {
                     mensaje = "El usuario o el tipo de obstáculo no existe"
                 });
             }
             catch (Exception)
             {
-                return StatusCode(500, new {
+                return StatusCode(500, new
+                {
                     mensaje = "Error al registrar el reporte"
                 });
             }
@@ -345,10 +351,10 @@ namespace RutasInclusivasAPI.Controllers
                 });
             }
         }
-    }
-    
+
+
         //VALIDAR VOTO DE USUARIO EN VALIDAR REPORTES
-    [HttpPost("validar")]
+        [HttpPost("validar")]
         [Authorize]
         public async Task<IActionResult> ValidarObstaculo([FromBody] ValidacionRegistro request)
         {
@@ -448,3 +454,4 @@ namespace RutasInclusivasAPI.Controllers
             }
         }
     }
+}
