@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -157,6 +158,11 @@ public final class ApiClient {
             }
 
             int codigo = conexion.getResponseCode();
+            if (codigo == 401) {
+                // Diagnóstico: el motivo exacto (issuer/audience/firma/vencido) viene en este header.
+                Log.w("ApiClient", "401 en " + metodo + " " + path + " | WWW-Authenticate: "
+                        + conexion.getHeaderField("WWW-Authenticate"));
+            }
             InputStream flujo = codigo < 400 ? conexion.getInputStream() : conexion.getErrorStream();
             return crearResponse(codigo, leerTexto(flujo));
 

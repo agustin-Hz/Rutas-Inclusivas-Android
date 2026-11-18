@@ -32,6 +32,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 string claveJwt = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Falta configurar Jwt:Key (User Secrets).");
+string emisorJwt = builder.Configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Falta configurar Jwt:Issuer (User Secrets).");
+string audienciaJwt = builder.Configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Falta configurar Jwt:Audience (User Secrets).");
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -45,10 +47,23 @@ builder.Services
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = emisorJwt,
+            ValidAudience = audienciaJwt,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(claveJwt)),
             ClockSkew = TimeSpan.Zero
+        };
+
+        // Deja en la consola de la API el motivo exacto por el que se rechaza un token.
+        opciones.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = contexto =>
+            {
+                contexto.HttpContext.RequestServices
+                    .GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("JwtBearer")
+                    .LogWarning("Token rechazado: {Motivo}", contexto.Exception.Message);
+                return Task.CompletedTask;
+            }
         };
     });
 

@@ -16,10 +16,6 @@ import android.app.Dialog;
 import android.view.Window;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import android.widget.Toast;
 
 
@@ -66,6 +62,7 @@ public class HomeActivity extends BaseActivity {
     private Double longitudActual = null;
     private final List<Marker> marcadoresReportes = new ArrayList<>();
     private ActivityResultLauncher<String[]> solicitarPermisosUbicacion;
+    private CancellationTokenSource tokenUbicacion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -198,6 +195,11 @@ public class HomeActivity extends BaseActivity {
         // Obtener el mapa del XML de la pantalla principal.
         mapView = findViewById(R.id.mapView);
 
+        // OSMDroid libera su repositorio interno cuando la vista se separa de la ventana
+        // (por ejemplo al abrir otra Activity). Se desactiva ese modo y se libera a mano
+        // en onDestroy(), para que un callback tardío no cree un Marker sobre un mapa muerto.
+        mapView.setDestroyMode(false);
+
         // Configurar el mapa de calles.
         mapView.setTileSource(TileSourceFactory.MAPNIK);
 
@@ -284,13 +286,19 @@ public class HomeActivity extends BaseActivity {
                 ? Priority.PRIORITY_HIGH_ACCURACY
                 : Priority.PRIORITY_BALANCED_POWER_ACCURACY;
 
-        CancellationTokenSource token =
-                new CancellationTokenSource();
+        if (tokenUbicacion != null) {
+            tokenUbicacion.cancel();
+        }
+        tokenUbicacion = new CancellationTokenSource();
 
         fusedLocationClient.getCurrentLocation(
                 prioridad,
-                token.getToken()
+                tokenUbicacion.getToken()
         ).addOnSuccessListener(ubicacion -> {
+
+            if (!activityViva()) {
+                return;
+            }
 
             if (ubicacion != null) {
 
@@ -313,6 +321,10 @@ public class HomeActivity extends BaseActivity {
 
         }).addOnFailureListener(error -> {
 
+            if (!activityViva()) {
+                return;
+            }
+
             android.widget.Toast.makeText(
                     this,
                     "Error al obtener la ubicación",
@@ -322,6 +334,10 @@ public class HomeActivity extends BaseActivity {
         });
     }
     private void centrarMapaEnUsuario(double latitud, double longitud) {
+
+        if (!activityViva()) {
+            return;
+        }
 
         GeoPoint posicionUsuario =
                 new GeoPoint(latitud, longitud);
@@ -361,6 +377,22 @@ public class HomeActivity extends BaseActivity {
         }
 
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (tokenUbicacion != null) {
+            tokenUbicacion.cancel();
+        }
+        if (mapView != null) {
+            mapView.onDetach();
+        }
+        super.onDestroy();
+    }
+
+    /** La Activity sigue en pantalla y el mapa existe: es seguro tocar la interfaz. */
+    private boolean activityViva() {
+        return mapView != null && !isFinishing() && !isDestroyed();
     }
 
     private void mostrarDialogoReportar() {
@@ -462,7 +494,7 @@ public class HomeActivity extends BaseActivity {
 
         ApiClient.get("api/Reportes", respuesta -> {
 
-            if (isFinishing() || isDestroyed()) {
+            if (!activityViva()) {
                 return;
             }
 
@@ -597,51 +629,31 @@ public class HomeActivity extends BaseActivity {
         dialog.show();
     }
     private void enviarValidacionAPI(int idReporte, String tipoVoto, String comentario) {
-        // Reemplaza esto con la forma en que obtienes el token en tu app
-        SessionManager sessionManager = new SessionManager(this);
-        String token = sessionManager.getToken();
 
-        new Thread(() -> {
-            try {
-                // Usa la constante BASE_URL de tu ApiClient si la tienes
-                URL url = new URL(ApiClient.BASE_URL + "api/Reportes/validar");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json; utf-8");
-                conn.setRequestProperty("Accept", "application/json");
-                conn.setRequestProperty("Authorization", "Bearer " + token);
-                conn.setDoOutput(true);
+        JSONObject json = new JSONObject();
+        try {
+            json.put("idReporte", idReporte);
+            json.put("tipoVoto", tipoVoto);
+            json.put("comentarioEvidencia", comentario.isEmpty() ? JSONObject.NULL : comentario);
+        } catch (org.json.JSONException ignored) {
+        }
 
-                JSONObject jsonParam = new JSONObject();
-                jsonParam.put("idReporte", idReporte);
-                jsonParam.put("tipoVoto", tipoVoto);
-                jsonParam.put("comentarioEvidencia", comentario.isEmpty() ? null : comentario);
-
-                try (OutputStream os = conn.getOutputStream()) {
-                    byte[] input = jsonParam.toString().getBytes(StandardCharsets.UTF_8);
-                    os.write(input, 0, input.length);
-                }
-
-                int responseCode = conn.getResponseCode();
-
-                runOnUiThread(() -> {
-                    if (responseCode == 200) {
-                        Toast.makeText(this, "¡Gracias! Tu validación fue registrada.", Toast.LENGTH_SHORT).show();
-                        // método para recargar los reportes del mapa
-                        cargarReportesEnMapa();
-                    } else if (responseCode == 400) {
-                        Toast.makeText(this, "No se permiten votos duplicados en el mismo reporte.", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(this, "Error al validar el reporte.", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(this, "Error de conexión con el servidor.", Toast.LENGTH_SHORT).show()
-                );
+        // ApiClient agrega el token, usa la URL central y maneja el 401 (sesión vencida).
+        ApiClient.post("api/Reportes/validar", json, respuesta -> {
+            if (!activityViva()) {
+                return;
             }
-        }).start();
+
+            if (respuesta.networkError) {
+                Toast.makeText(this, "Error de conexión con el servidor.", Toast.LENGTH_SHORT).show();
+            } else if (respuesta.code == 200) {
+                Toast.makeText(this, "¡Gracias! Tu validación fue registrada.", Toast.LENGTH_SHORT).show();
+                cargarReportesEnMapa();
+            } else if (respuesta.code == 400) {
+                Toast.makeText(this, "No se permiten votos duplicados en el mismo reporte.", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "Error al validar el reporte.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
