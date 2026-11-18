@@ -74,11 +74,12 @@
         android:elevation="3dp">
 
         <!-- Esta es la vista del mapa -->
+
+
         <org.osmdroid.views.MapView
             android:id="@+id/mapView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-
 
         <TextView
             android:layout_width="wrap_content"
@@ -93,6 +94,19 @@
             android:textColor="#123B70"
             android:textSize="12sp"
             android:textStyle="bold" />
+
+        <!-- Botón para filtrar obstáculos -->
+        <Button
+            android:id="@+id/btnFiltrarObstaculos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="12dp"
+            android:text="Filtros"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:backgroundTint="#0866D9" />
 
         <!-- Panel con información de la ruta -->
         <LinearLayout

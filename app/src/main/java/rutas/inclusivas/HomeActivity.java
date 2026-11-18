@@ -271,6 +271,30 @@ public class HomeActivity extends BaseActivity {
                 mostrarDialogoReportar()
         );
 
+        Button btnFiltrarObstaculos = findViewById(R.id.btnFiltrarObstaculos);
+
+        btnFiltrarObstaculos.setOnClickListener(v -> {
+
+            String[] tipos = {
+                    "Todos los obstáculos",
+                    "Vereda rota",
+                    "Rampa rota o bloqueada",
+                    "Vereda obstruida",
+                    "Semáforo sonoro averiado",
+                    "Obra sin paso accesible"
+            };
+
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Filtrar obstáculos")
+                    .setItems(tipos, (dialog, opcion) -> {
+
+                        Toast.makeText(this,
+                                "Seleccionaste: " + tipos[opcion],
+                                Toast.LENGTH_SHORT).show();
+                    })
+                    .show();
+        });
+
         // Acceso rápido: configurar accesibilidad
         ImageButton btnAccesibilidadHome =
                 findViewById(R.id.btnAccesibilidadHome);
