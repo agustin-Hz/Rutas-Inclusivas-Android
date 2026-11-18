@@ -55,9 +55,10 @@ namespace RutasInclusivasAPI.Controllers
             );
 
             // 3. Construimos la URL de consulta.
+
             string url =
-                $"http://routing.openstreetmap.de/routed-car/route/v1/driving/{origen};{destino}" +
-                "?overview=full&geometries=geojson";
+     $"http://routing.openstreetmap.de/routed-foot/route/v1/driving/{origen};{destino}" +
+     "?overview=full&geometries=geojson";
 
             try
             {
@@ -136,11 +137,16 @@ namespace RutasInclusivasAPI.Controllers
 
                 return Ok(resultado);
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
                 return StatusCode(
                     502,
-                    "No se pudo establecer conexión con el servidor de rutas."
+                    new
+                    {
+                        mensaje = "No se pudo establecer conexión con el servidor de rutas.",
+                        detalle = ex.Message,
+                        causaInterna = ex.InnerException?.Message
+                    }
                 );
             }
             catch (JsonException)
