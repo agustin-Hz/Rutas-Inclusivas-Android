@@ -604,7 +604,7 @@ public class HomeActivity extends BaseActivity {
         new Thread(() -> {
             try {
                 // Usa la constante BASE_URL de tu ApiClient si la tienes
-                URL url = new URL("http://192.168.1.41:5126/api/reportes/validar");
+                URL url = new URL(ApiClient.BASE_URL + "api/Reportes/validar");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; utf-8");
