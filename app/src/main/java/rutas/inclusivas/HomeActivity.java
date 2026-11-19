@@ -91,6 +91,7 @@ public class HomeActivity extends BaseActivity {
     private String direccionDestinoSeleccionado;
     private double latitudDestinoSeleccionado;
     private double longitudDestinoSeleccionado;
+    private int filtroTipoSeleccionado = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -288,9 +289,10 @@ public class HomeActivity extends BaseActivity {
                     .setTitle("Filtrar obstáculos")
                     .setItems(tipos, (dialog, opcion) -> {
 
-                        Toast.makeText(this,
-                                "Seleccionaste: " + tipos[opcion],
-                                Toast.LENGTH_SHORT).show();
+                        filtroTipoSeleccionado = opcion;
+                        cargarReportesEnMapa();
+
+                        Toast.makeText(this, "Seleccionaste: " + tipos[opcion], Toast.LENGTH_SHORT).show();
                     })
                     .show();
         });
@@ -849,11 +851,17 @@ public class HomeActivity extends BaseActivity {
             mapView.getOverlays().removeAll(marcadoresReportes);
             marcadoresReportes.clear();
 
+            int reportesMostrados = 0;
+
             for (int i = 0; i < reportes.length(); i++) {
 
                 JSONObject reporte = reportes.optJSONObject(i);
 
                 if (reporte == null) {
+                    continue;
+                }
+
+                if (filtroTipoSeleccionado != 0 && reporte.optInt("idTipo", -1) != filtroTipoSeleccionado) {
                     continue;
                 }
 
@@ -918,6 +926,15 @@ public class HomeActivity extends BaseActivity {
 
                 mapView.getOverlays().add(marcador);
                 marcadoresReportes.add(marcador);
+
+                reportesMostrados++;
+            }
+
+            if (reportesMostrados == 0 && filtroTipoSeleccionado != 0) {
+
+                Toast.makeText(this,
+                        "No se encontraron obstáculos de la categoría seleccionada.",
+                        Toast.LENGTH_SHORT).show();
             }
             mapView.invalidate();
         });
