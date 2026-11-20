@@ -78,9 +78,12 @@ public class HomeActivity extends BaseActivity {
     private FusedLocationProviderClient fusedLocationClient;
     private Double latitudActual = null;
     private Double longitudActual = null;
+    private Double latitudManualSeleccionada = null;
+    private Double longitudManualSeleccionada = null;
     private final List<Marker> marcadoresReportes = new ArrayList<>();
     private ActivityResultLauncher<String[]> solicitarPermisosUbicacion;
     private ActivityResultLauncher<Intent> compararRutasLauncher;
+    private ActivityResultLauncher<Intent> seleccionarUbicacionLauncher;
     private CancellationTokenSource tokenUbicacion;
 
     // Permite abrir BuscarDestinoActivity y recibir su resultado.
@@ -97,7 +100,6 @@ public class HomeActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         SessionManager sesion = new SessionManager(this);
         if (!sesion.haySesionValida()) {
             irAlLogin();
@@ -107,6 +109,29 @@ public class HomeActivity extends BaseActivity {
         EdgeToEdge.enable(this);
 
         setContentView(R.layout.activity_home);
+
+        seleccionarUbicacionLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                resultado -> {
+
+                    if (resultado.getResultCode() != RESULT_OK) {
+                        return;
+                    }
+
+                    Intent datos = resultado.getData();
+
+                    if (datos == null) {
+                        return;
+                    }
+
+                    if (!datos.hasExtra("latitudElegida") || !datos.hasExtra("longitudElegida")) {
+                        return;
+                    }
+
+                    latitudManualSeleccionada = datos.getDoubleExtra("latitudElegida", 0.0);
+                    longitudManualSeleccionada = datos.getDoubleExtra("longitudElegida", 0.0);
+                }
+        );
 
         // Vinculamos el panel de información de la ruta.
         panelRuta = findViewById(R.id.panelRuta);
@@ -726,6 +751,9 @@ public class HomeActivity extends BaseActivity {
 
     private void mostrarDialogoReportar() {
 
+        latitudManualSeleccionada = null;
+        longitudManualSeleccionada = null;
+
         String[] tipos = {
                 "Vereda rota",
                 "Rampa rota o bloqueada",
@@ -766,14 +794,68 @@ public class HomeActivity extends BaseActivity {
         contenido.addView(selectorTipo);
         contenido.addView(input);
 
+        android.widget.RadioGroup grupoUbicacion = new android.widget.RadioGroup(this);
+
+        android.widget.RadioButton opcionGPS = new android.widget.RadioButton(this);
+        opcionGPS.setId(View.generateViewId());
+        opcionGPS.setText("Usar ubicación del GPS");
+
+        android.widget.RadioButton opcionManual = new android.widget.RadioButton(this);
+        opcionManual.setId(View.generateViewId());
+        opcionManual.setText("Seleccionar manualmente");
+
+        grupoUbicacion.addView(opcionGPS);
+        grupoUbicacion.addView(opcionManual);
+
+        opcionGPS.setChecked(true);
+
+        contenido.addView(grupoUbicacion);
+
+        opcionManual.setOnClickListener(v -> {
+
+            Intent intent = new Intent(
+                    HomeActivity.this,
+                    SeleccionarUbicacionActivity.class
+            );
+
+            if (latitudActual != null && longitudActual != null) {
+                intent.putExtra("latitudInicial", latitudActual.doubleValue());
+                intent.putExtra("longitudInicial", longitudActual.doubleValue());
+            }
+
+            seleccionarUbicacionLauncher.launch(intent);
+        });
+
         new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Reportar obstáculo")
                 .setView(contenido)
                 .setPositiveButton("Enviar", (dialog, which) -> {
+
                     String desc = input.getText().toString().trim();
+
                     if (!desc.isEmpty()) {
                         int idTipo = selectorTipo.getSelectedItemPosition() + 1;
-                        enviarReporteApi(desc, idTipo);
+
+                        if (opcionManual.isChecked()) {
+
+                            if (latitudManualSeleccionada == null || longitudManualSeleccionada == null) {
+                                Toast.makeText(this,
+                                        "Seleccioná una ubicación en el mapa",
+                                        Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            enviarReporteApi(desc, idTipo, latitudManualSeleccionada, longitudManualSeleccionada);
+
+                        } else {
+
+                            if (latitudActual == null || longitudActual == null) {
+                                Toast.makeText(this,
+                                        "Todavía no se pudo obtener tu ubicación",
+                                        Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            enviarReporteApi(desc, idTipo, latitudActual, longitudActual);
+                        }
                     }
                 })
                 .setNegativeButton("Cancelar", null)
@@ -781,22 +863,14 @@ public class HomeActivity extends BaseActivity {
     }
 
 
-    private void enviarReporteApi(String desc, int idTipo) {
-        if (latitudActual == null || longitudActual == null) {
-            android.widget.Toast.makeText(
-                    this,
-                    "Todavía no se pudo obtener tu ubicación",
-                    android.widget.Toast.LENGTH_LONG
-            ).show();
-            return;
-        }
+    private void enviarReporteApi(String desc, int idTipo, double latitud, double longitud) {
 
         org.json.JSONObject json = new org.json.JSONObject();
         try {
             json.put("ID_Tipo", idTipo);
             json.put("Descripcion", desc);
-            json.put("Latitud", latitudActual);
-            json.put("Longitud", longitudActual);
+            json.put("Latitud", latitud);
+            json.put("Longitud", longitud);
         } catch (org.json.JSONException ignored) {}
 
         ApiClient.post("api/Reportes", json, respuesta -> {

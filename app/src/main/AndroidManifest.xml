@@ -47,7 +47,6 @@
             android:name=".ResetPasswordActivity"
             android:exported="false" />
 
-
         <activity
             android:name=".AccesibilidadActivity"
             android:exported="false" />
@@ -75,6 +74,10 @@
 
         <activity
             android:name=".PerfilActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SeleccionarUbicacionActivity"
             android:exported="false" />
 
     </application>
