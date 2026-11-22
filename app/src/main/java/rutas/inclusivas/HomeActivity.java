@@ -1,73 +1,58 @@
+
 package rutas.inclusivas;
 
+import android.Manifest;
+import android.app.Dialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import org.json.JSONArray;
-
-import androidx.activity.EdgeToEdge;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
-/** import necesarios para dialog (validacion de obstaculos) */
-import android.app.Dialog;
-import android.view.Window;
-import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.Toast;
 
-
-/** Importo lo nececario para OSMDroid. */
-
-import org.osmdroid.config.Configuration;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
-import org.osmdroid.api.IMapController;
-import org.osmdroid.views.overlay.Marker;
-import android.widget.ImageButton;
-import org.osmdroid.views.overlay.Polyline;
-import android.graphics.Color;
-
-/** Importo lo nececario para trabajar con la ubicación. */
-
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.location.Location;
-
+import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
 import com.google.android.gms.tasks.CancellationTokenSource;
 
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.List;
-
+import org.json.JSONArray;
 import org.json.JSONObject;
-
-import android.widget.LinearLayout;
-import android.view.View;
-import java.util.Locale;
+import org.osmdroid.api.IMapController;
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Polyline;
 
 import java.util.ArrayList;
 import java.util.List;
-import android.graphics.Color;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.overlay.Polyline;
-import org.osmdroid.util.BoundingBox;
+import java.util.Locale;
 
 public class HomeActivity extends BaseActivity {
 
     private MapView mapView;
     private Polyline rutaDibujada;
+
+    // Marcador azul de la ubicación del usuario.
+    private Marker marcadorUsuario;
 
     // Panel de información de la ruta.
     private LinearLayout panelRuta;
@@ -75,25 +60,34 @@ public class HomeActivity extends BaseActivity {
     private TextView tvTiempoRuta;
     private TextView tvSaludo;
     private TextView tvDatos;
+
     private FusedLocationProviderClient fusedLocationClient;
+
     private Double latitudActual = null;
     private Double longitudActual = null;
+
     private Double latitudManualSeleccionada = null;
     private Double longitudManualSeleccionada = null;
+
+    // Lista para controlar los marcadores de reportes.
     private final List<Marker> marcadoresReportes = new ArrayList<>();
+
     private ActivityResultLauncher<String[]> solicitarPermisosUbicacion;
     private ActivityResultLauncher<Intent> compararRutasLauncher;
     private ActivityResultLauncher<Intent> seleccionarUbicacionLauncher;
     private CancellationTokenSource tokenUbicacion;
 
-    // Permite abrir BuscarDestinoActivity y recibir su resultado.
     private ActivityResultLauncher<Intent> buscarDestinoLauncher;
+    private ActivityResultLauncher<Intent> reportarObstaculoLauncher;
 
     // Datos del destino seleccionado.
     private String nombreDestinoSeleccionado;
     private String direccionDestinoSeleccionado;
-    private double latitudDestinoSeleccionado;
-    private double longitudDestinoSeleccionado;
+
+    // NaN indica que todavía no se seleccionó un destino.
+    private double latitudDestinoSeleccionado = Double.NaN;
+    private double longitudDestinoSeleccionado = Double.NaN;
+
     private int filtroTipoSeleccionado = 0;
 
     @Override
@@ -101,6 +95,7 @@ public class HomeActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         SessionManager sesion = new SessionManager(this);
+
         if (!sesion.haySesionValida()) {
             irAlLogin();
             return;
@@ -124,12 +119,26 @@ public class HomeActivity extends BaseActivity {
                         return;
                     }
 
-                    if (!datos.hasExtra("latitudElegida") || !datos.hasExtra("longitudElegida")) {
+                    if (!datos.hasExtra("latitudElegida")
+                            || !datos.hasExtra("longitudElegida")) {
                         return;
                     }
 
-                    latitudManualSeleccionada = datos.getDoubleExtra("latitudElegida", 0.0);
-                    longitudManualSeleccionada = datos.getDoubleExtra("longitudElegida", 0.0);
+                    latitudManualSeleccionada =
+                            datos.getDoubleExtra("latitudElegida", 0.0);
+
+                    longitudManualSeleccionada =
+                            datos.getDoubleExtra("longitudElegida", 0.0);
+                }
+        );
+
+        reportarObstaculoLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                resultado -> {
+
+                    if (resultado.getResultCode() == RESULT_OK) {
+                        cargarReportesEnMapa();
+                    }
                 }
         );
 
@@ -171,45 +180,52 @@ public class HomeActivity extends BaseActivity {
                         return;
                     }
 
-                    double[] latitudes = datos.getDoubleArrayExtra("latitudesRuta");
-                    double[] longitudes = datos.getDoubleArrayExtra("longitudesRuta");
+                    double[] latitudes =
+                            datos.getDoubleArrayExtra("latitudesRuta");
+
+                    double[] longitudes =
+                            datos.getDoubleArrayExtra("longitudesRuta");
 
                     if (latitudes == null || longitudes == null) {
                         return;
                     }
 
-                    // En el siguiente paso vamos a dibujar la ruta recibida.
-                    if (latitudes.length != longitudes.length || latitudes.length < 2) {
-                        Toast.makeText(this,
+                    if (latitudes.length != longitudes.length
+                            || latitudes.length < 2) {
+
+                        Toast.makeText(
+                                this,
                                 "Los datos de la ruta no son válidos.",
-                                Toast.LENGTH_SHORT).show();
+                                Toast.LENGTH_SHORT
+                        ).show();
+
                         return;
                     }
 
                     List<GeoPoint> puntosRuta = new ArrayList<>();
 
                     for (int i = 0; i < latitudes.length; i++) {
-                        puntosRuta.add(new GeoPoint(latitudes[i], longitudes[i]));
+                        puntosRuta.add(
+                                new GeoPoint(latitudes[i], longitudes[i])
+                        );
                     }
 
-// Dibujamos la ruta seleccionada.
+                    // Dibujamos la ruta seleccionada.
                     dibujarRutaEnMapa(puntosRuta);
                 }
         );
+
         buscarDestinoLauncher =
                 registerForActivityResult(
                         new ActivityResultContracts.StartActivityForResult(),
                         resultado -> {
 
-                            // Comprobamos que BuscarDestinoActivity
-                            // haya devuelto un resultado correcto.
                             if (resultado.getResultCode() == RESULT_OK) {
 
                                 Intent datos = resultado.getData();
 
                                 if (datos != null) {
 
-                                    // Recuperamos los datos del destino.
                                     nombreDestinoSeleccionado =
                                             datos.getStringExtra("nombre");
 
@@ -222,7 +238,6 @@ public class HomeActivity extends BaseActivity {
                                     longitudDestinoSeleccionado =
                                             datos.getDoubleExtra("longitud", Double.NaN);
 
-                                    // Comprobamos que recibimos las coordenadas.
                                     if (Double.isNaN(latitudDestinoSeleccionado)
                                             || Double.isNaN(longitudDestinoSeleccionado)) {
 
@@ -241,27 +256,34 @@ public class HomeActivity extends BaseActivity {
                                             Toast.LENGTH_SHORT
                                     ).show();
 
-                                    // Ya tenemos el destino. Solicitamos una ubicación actualizada.
+                                    // Obtenemos la ubicación actual para calcular el origen.
                                     obtenerUbicacion();
                                 }
                             }
                         }
                 );
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationClient =
+                LocationServices.getFusedLocationProviderClient(this);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.home), (v, insets) -> {
-            Insets barras = insets.getInsets(
-                    WindowInsetsCompat.Type.systemBars()
-            );
-            v.setPadding(
-                    barras.left,
-                    barras.top,
-                    barras.right,
-                    barras.bottom
-            );
-            return insets;
-        });
+        ViewCompat.setOnApplyWindowInsetsListener(
+                findViewById(R.id.home),
+                (v, insets) -> {
+
+                    Insets barras = insets.getInsets(
+                            WindowInsetsCompat.Type.systemBars()
+                    );
+
+                    v.setPadding(
+                            barras.left,
+                            barras.top,
+                            barras.right,
+                            barras.bottom
+                    );
+
+                    return insets;
+                }
+        );
 
         inicializarMapa();
         verificarPermisosUbicacion();
@@ -269,13 +291,18 @@ public class HomeActivity extends BaseActivity {
 
         tvSaludo = findViewById(R.id.tvSaludo);
         tvDatos = findViewById(R.id.tvDatos);
+
         Button btnMiPerfil = findViewById(R.id.btnMiPerfil);
+
         btnMiPerfil.setOnClickListener(v ->
-                startActivity(new Intent(HomeActivity.this, PerfilActivity.class)));
+                startActivity(
+                        new Intent(HomeActivity.this, PerfilActivity.class)
+                )
+        );
 
         Button btnCerrar = findViewById(R.id.btnCerrarSesion);
 
-        // Acceso rápido: buscar destino
+        // Acceso rápido: buscar destino.
         ImageButton btnBuscarDestinoHome =
                 findViewById(R.id.btnBuscarDestinoHome);
 
@@ -289,15 +316,27 @@ public class HomeActivity extends BaseActivity {
             buscarDestinoLauncher.launch(intent);
         });
 
-        // Acceso rápido: reportar obstáculo
+        // Acceso rápido: reportar obstáculo.
         ImageButton btnReportarHome =
                 findViewById(R.id.btnReportarHome);
 
-        btnReportarHome.setOnClickListener(v ->
-                mostrarDialogoReportar()
-        );
+        btnReportarHome.setOnClickListener(v -> {
 
-        Button btnFiltrarObstaculos = findViewById(R.id.btnFiltrarObstaculos);
+            Intent intent = new Intent(
+                    HomeActivity.this,
+                    ReportarObstaculoActivity.class
+            );
+
+            if (latitudActual != null && longitudActual != null) {
+                intent.putExtra("latitudInicial", latitudActual);
+                intent.putExtra("longitudInicial", longitudActual);
+            }
+
+            reportarObstaculoLauncher.launch(intent);
+        });
+
+        Button btnFiltrarObstaculos =
+                findViewById(R.id.btnFiltrarObstaculos);
 
         btnFiltrarObstaculos.setOnClickListener(v -> {
 
@@ -317,35 +356,45 @@ public class HomeActivity extends BaseActivity {
                         filtroTipoSeleccionado = opcion;
                         cargarReportesEnMapa();
 
-                        Toast.makeText(this, "Seleccionaste: " + tipos[opcion], Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
+                                this,
+                                "Seleccionaste: " + tipos[opcion],
+                                Toast.LENGTH_SHORT
+                        ).show();
                     })
                     .show();
         });
 
-        // Acceso rápido: configurar accesibilidad
+        // Acceso rápido: configurar accesibilidad.
         ImageButton btnAccesibilidadHome =
                 findViewById(R.id.btnAccesibilidadHome);
 
         btnAccesibilidadHome.setOnClickListener(v -> {
             startActivity(
-                    new Intent(HomeActivity.this, AccesibilidadActivity.class)
+                    new Intent(
+                            HomeActivity.this,
+                            AccesibilidadActivity.class
+                    )
             );
         });
 
-        // Primera configuración de accesibilidad
+        // Primera configuración de accesibilidad.
         if (!new AccesibilidadPrefs(this).estaConfigurada()) {
+
             Intent primera = new Intent(
                     HomeActivity.this,
                     AccesibilidadActivity.class
             );
+
             primera.putExtra(
                     AccesibilidadActivity.EXTRA_PRIMERA_VEZ,
                     true
             );
+
             startActivity(primera);
         }
 
-        // Cerrar sesión
+        // Cerrar sesión.
         btnCerrar.setOnClickListener(v -> {
             sesion.cerrarSesion();
             irAlLogin();
@@ -353,64 +402,56 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void mostrarDatosUsuario() {
+
         SessionManager sesion = new SessionManager(this);
-        tvSaludo.setText(getString(R.string.home_saludo, sesion.getNombre()));
+
+        tvSaludo.setText(
+                getString(R.string.home_saludo, sesion.getNombre())
+        );
+
         String zona = sesion.getZona();
-        tvDatos.setText(zona.isEmpty()
-                ? sesion.getCorreo()
-                : getString(R.string.home_datos, sesion.getCorreo(), zona));
+
+        tvDatos.setText(
+                zona.isEmpty()
+                        ? sesion.getCorreo()
+                        : getString(
+                        R.string.home_datos,
+                        sesion.getCorreo(),
+                        zona
+                )
+        );
     }
 
     private void inicializarMapa() {
 
-        // Cargar la configuración de OSMDroid.
         Configuration.getInstance().load(
                 getApplicationContext(),
-                getSharedPreferences("osmdroid", MODE_PRIVATE));
+                getSharedPreferences("osmdroid", MODE_PRIVATE)
+        );
 
         Configuration.getInstance()
                 .setUserAgentValue(getPackageName());
 
-        // Obtener el mapa del XML de la pantalla principal.
         mapView = findViewById(R.id.mapView);
 
-        // OSMDroid libera su repositorio interno cuando la vista se separa de la ventana
-        // (por ejemplo al abrir otra Activity). Se desactiva ese modo y se libera a mano
-        // en onDestroy(), para que un callback tardío no cree un Marker sobre un mapa muerto.
         mapView.setDestroyMode(false);
 
-        // Configurar el mapa de calles.
         mapView.setTileSource(TileSourceFactory.MAPNIK);
 
-        // Permitir zoom con los dedos.
         mapView.setMultiTouchControls(true);
 
-        // Obtener el controlador del mapa.
         IMapController controlador = mapView.getController();
 
-        // Definir la ubicación inicial.
+        // Ubicación inicial del mapa.
         GeoPoint ubicacionInicial =
                 new GeoPoint(-34.6037, -58.3816);
 
-        // Establecer el nivel de zoom.
         controlador.setZoom(15.0);
-
-        // Centrar el mapa.
         controlador.setCenter(ubicacionInicial);
 
-        // Crear un marcador.
-        Marker marcador = new Marker(mapView);
+        // No creamos un marcador fijo en Buenos Aires.
+        // El marcador azul se creará cuando obtengamos el GPS.
 
-        // Establecer la posición del marcador.
-        marcador.setPosition(ubicacionInicial);
-
-        // Texto que aparecerá al tocar el marcador.
-        marcador.setTitle("Ciudad de Buenos Aires");
-
-        // Agregar el marcador al mapa.
-        mapView.getOverlays().add(marcador);
-
-        // Redibujar el mapa.
         mapView.invalidate();
     }
 
@@ -468,6 +509,7 @@ public class HomeActivity extends BaseActivity {
         if (tokenUbicacion != null) {
             tokenUbicacion.cancel();
         }
+
         tokenUbicacion = new CancellationTokenSource();
 
         fusedLocationClient.getCurrentLocation(
@@ -489,7 +531,7 @@ public class HomeActivity extends BaseActivity {
 
                 centrarMapaEnUsuario(latitud, longitud);
 
-                // Si ya seleccionamos un destino, calculamos la ruta.
+                // Si ya seleccionamos un destino, abrimos Comparar Rutas.
                 if (!Double.isNaN(latitudDestinoSeleccionado)
                         && !Double.isNaN(longitudDestinoSeleccionado)) {
 
@@ -498,10 +540,10 @@ public class HomeActivity extends BaseActivity {
 
             } else {
 
-                android.widget.Toast.makeText(
+                Toast.makeText(
                         this,
                         "No se pudo obtener la ubicación",
-                        android.widget.Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT
                 ).show();
             }
 
@@ -511,14 +553,15 @@ public class HomeActivity extends BaseActivity {
                 return;
             }
 
-            android.widget.Toast.makeText(
+            Toast.makeText(
                     this,
                     "Error al obtener la ubicación",
-                    android.widget.Toast.LENGTH_SHORT
+                    Toast.LENGTH_SHORT
             ).show();
 
         });
     }
+
     private void centrarMapaEnUsuario(double latitud, double longitud) {
 
         if (!activityViva()) {
@@ -531,16 +574,27 @@ public class HomeActivity extends BaseActivity {
         IMapController controlador = mapView.getController();
 
         controlador.setZoom(17.0);
-
         controlador.setCenter(posicionUsuario);
 
-        Marker marcador = new Marker(mapView);
+        // Crear el marcador azul solamente la primera vez.
+        if (marcadorUsuario == null) {
 
-        marcador.setPosition(posicionUsuario);
+            marcadorUsuario = new Marker(mapView);
 
-        marcador.setTitle("Mi ubicación");
+            marcadorUsuario.setTitle("Mi ubicación");
 
-        mapView.getOverlays().add(marcador);
+            marcadorUsuario.setIcon(
+                    ContextCompat.getDrawable(
+                            this,
+                            R.drawable.ic_ubicacion_usuario
+                    )
+            );
+
+            mapView.getOverlays().add(marcadorUsuario);
+        }
+
+        // Actualizar la posición del mismo marcador.
+        marcadorUsuario.setPosition(posicionUsuario);
 
         mapView.invalidate();
     }
@@ -553,6 +607,7 @@ public class HomeActivity extends BaseActivity {
         }
 
         rutaDibujada = new Polyline();
+
         rutaDibujada.setPoints(puntos);
         rutaDibujada.setColor(Color.BLUE);
         rutaDibujada.setWidth(12f);
@@ -560,8 +615,8 @@ public class HomeActivity extends BaseActivity {
         mapView.getOverlays().add(rutaDibujada);
 
         // Ajustar el mapa para mostrar toda la ruta.
-        org.osmdroid.views.overlay.Polyline line = rutaDibujada;
         BoundingBox limites = BoundingBox.fromGeoPoints(puntos);
+
         mapView.zoomToBoundingBox(limites, true);
 
         mapView.invalidate();
@@ -574,6 +629,7 @@ public class HomeActivity extends BaseActivity {
         if (mapView != null) {
             mapView.onResume();
         }
+
         if (tvSaludo != null) {
             mostrarDatosUsuario();
         }
@@ -581,6 +637,7 @@ public class HomeActivity extends BaseActivity {
 
     @Override
     protected void onPause() {
+
         if (mapView != null) {
             mapView.onPause();
         }
@@ -590,18 +647,22 @@ public class HomeActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
+
         if (tokenUbicacion != null) {
             tokenUbicacion.cancel();
         }
+
         if (mapView != null) {
             mapView.onDetach();
         }
+
         super.onDestroy();
     }
 
     private void abrirCompararRutas() {
 
         if (latitudActual == null || longitudActual == null) {
+
             Toast.makeText(
                     this,
                     "Todavía no tenemos tu ubicación",
@@ -628,10 +689,11 @@ public class HomeActivity extends BaseActivity {
 
         compararRutasLauncher.launch(intent);
     }
+
     private void solicitarRuta() {
 
-        // Verificamos que tengamos las coordenadas necesarias.
         if (latitudActual == null || longitudActual == null) {
+
             Toast.makeText(
                     this,
                     "Todavía no tenemos tu ubicación",
@@ -653,7 +715,6 @@ public class HomeActivity extends BaseActivity {
             return;
         }
 
-        // Solicitamos el cálculo al backend.
         ApiClient.calcularRuta(
                 latitudActual,
                 longitudActual,
@@ -666,6 +727,7 @@ public class HomeActivity extends BaseActivity {
                     }
 
                     if (error != null) {
+
                         Toast.makeText(
                                 this,
                                 error,
@@ -675,7 +737,6 @@ public class HomeActivity extends BaseActivity {
                         return;
                     }
 
-                    // Dibujamos la ruta recibida.
                     dibujarRuta(ruta);
                 }
         );
@@ -684,6 +745,7 @@ public class HomeActivity extends BaseActivity {
     private void dibujarRuta(Ruta ruta) {
 
         if (ruta == null || ruta.getPuntos().isEmpty()) {
+
             Toast.makeText(
                     this,
                     "La ruta no contiene puntos para dibujar",
@@ -693,7 +755,6 @@ public class HomeActivity extends BaseActivity {
             return;
         }
 
-        // Convertimos los puntos recibidos en GeoPoints.
         List<GeoPoint> puntosMapa = new ArrayList<>();
 
         for (PuntoRuta punto : ruta.getPuntos()) {
@@ -706,45 +767,41 @@ public class HomeActivity extends BaseActivity {
             puntosMapa.add(coordenada);
         }
 
-        // Eliminamos la ruta anterior, si existía.
         if (rutaDibujada != null) {
             mapView.getOverlays().remove(rutaDibujada);
         }
 
-        // Creamos una nueva línea.
         rutaDibujada = new Polyline();
 
         rutaDibujada.setPoints(puntosMapa);
-
         rutaDibujada.setColor(Color.BLUE);
-
         rutaDibujada.setWidth(12f);
 
-        // Agregamos la ruta al mapa.
         mapView.getOverlays().add(rutaDibujada);
 
-        // Redibujamos el mapa.
         mapView.invalidate();
 
-        // Mostramos temporalmente los resultados.
-        double distanciaKm = ruta.getDistanciaMetros() / 1000.0;
+        double distanciaKm =
+                ruta.getDistanciaMetros() / 1000.0;
 
         int minutos = (int) Math.round(
                 ruta.getDuracionSegundos() / 60.0
         );
 
-        // Mostramos los datos de la ruta en el panel.
         tvDistanciaRuta.setText(
-                String.format(Locale.getDefault(), "%.2f km", distanciaKm)
+                String.format(
+                        Locale.getDefault(),
+                        "%.2f km",
+                        distanciaKm
+                )
         );
 
         tvTiempoRuta.setText(minutos + " min");
 
-// Hacemos visible el panel.
         panelRuta.setVisibility(View.VISIBLE);
     }
 
-    /** La Activity sigue en pantalla y el mapa existe: es seguro tocar la interfaz. */
+    /** Comprueba que la Activity y el mapa sigan disponibles. */
     private boolean activityViva() {
         return mapView != null && !isFinishing() && !isDestroyed();
     }
@@ -762,7 +819,8 @@ public class HomeActivity extends BaseActivity {
                 "Obra sin paso accesible"
         };
 
-        android.widget.Spinner selectorTipo = new android.widget.Spinner(this);
+        android.widget.Spinner selectorTipo =
+                new android.widget.Spinner(this);
 
         android.widget.ArrayAdapter<String> adaptador =
                 new android.widget.ArrayAdapter<>(
@@ -777,30 +835,38 @@ public class HomeActivity extends BaseActivity {
 
         selectorTipo.setAdapter(adaptador);
 
-        android.widget.EditText input = new android.widget.EditText(this);
+        EditText input = new EditText(this);
         input.setHint("Describí el obstáculo encontrado");
 
-        android.widget.TextView etiqueta = new android.widget.TextView(this);
+        TextView etiqueta = new TextView(this);
         etiqueta.setText("Tipo de obstáculo:");
 
-        android.widget.LinearLayout contenido = new android.widget.LinearLayout(this);
+        LinearLayout contenido = new LinearLayout(this);
 
-        contenido.setOrientation(android.widget.LinearLayout.VERTICAL);
+        contenido.setOrientation(LinearLayout.VERTICAL);
 
-        int margen = (int) (20 * getResources().getDisplayMetrics().density);
+        int margen = (int) (
+                20 * getResources().getDisplayMetrics().density
+        );
+
         contenido.setPadding(margen, 10, margen, 10);
 
         contenido.addView(etiqueta);
         contenido.addView(selectorTipo);
         contenido.addView(input);
 
-        android.widget.RadioGroup grupoUbicacion = new android.widget.RadioGroup(this);
+        android.widget.RadioGroup grupoUbicacion =
+                new android.widget.RadioGroup(this);
 
-        android.widget.RadioButton opcionGPS = new android.widget.RadioButton(this);
+        android.widget.RadioButton opcionGPS =
+                new android.widget.RadioButton(this);
+
         opcionGPS.setId(View.generateViewId());
         opcionGPS.setText("Usar ubicación del GPS");
 
-        android.widget.RadioButton opcionManual = new android.widget.RadioButton(this);
+        android.widget.RadioButton opcionManual =
+                new android.widget.RadioButton(this);
+
         opcionManual.setId(View.generateViewId());
         opcionManual.setText("Seleccionar manualmente");
 
@@ -819,8 +885,16 @@ public class HomeActivity extends BaseActivity {
             );
 
             if (latitudActual != null && longitudActual != null) {
-                intent.putExtra("latitudInicial", latitudActual.doubleValue());
-                intent.putExtra("longitudInicial", longitudActual.doubleValue());
+
+                intent.putExtra(
+                        "latitudInicial",
+                        latitudActual.doubleValue()
+                );
+
+                intent.putExtra(
+                        "longitudInicial",
+                        longitudActual.doubleValue()
+                );
             }
 
             seleccionarUbicacionLauncher.launch(intent);
@@ -831,30 +905,55 @@ public class HomeActivity extends BaseActivity {
                 .setView(contenido)
                 .setPositiveButton("Enviar", (dialog, which) -> {
 
-                    String desc = input.getText().toString().trim();
+                    String desc =
+                            input.getText().toString().trim();
 
                     if (!desc.isEmpty()) {
-                        int idTipo = selectorTipo.getSelectedItemPosition() + 1;
+
+                        int idTipo =
+                                selectorTipo.getSelectedItemPosition() + 1;
 
                         if (opcionManual.isChecked()) {
 
-                            if (latitudManualSeleccionada == null || longitudManualSeleccionada == null) {
-                                Toast.makeText(this,
+                            if (latitudManualSeleccionada == null
+                                    || longitudManualSeleccionada == null) {
+
+                                Toast.makeText(
+                                        this,
                                         "Seleccioná una ubicación en el mapa",
-                                        Toast.LENGTH_SHORT).show();
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
                                 return;
                             }
-                            enviarReporteApi(desc, idTipo, latitudManualSeleccionada, longitudManualSeleccionada);
+
+                            enviarReporteApi(
+                                    desc,
+                                    idTipo,
+                                    latitudManualSeleccionada,
+                                    longitudManualSeleccionada
+                            );
 
                         } else {
 
-                            if (latitudActual == null || longitudActual == null) {
-                                Toast.makeText(this,
+                            if (latitudActual == null
+                                    || longitudActual == null) {
+
+                                Toast.makeText(
+                                        this,
                                         "Todavía no se pudo obtener tu ubicación",
-                                        Toast.LENGTH_SHORT).show();
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
                                 return;
                             }
-                            enviarReporteApi(desc, idTipo, latitudActual, longitudActual);
+
+                            enviarReporteApi(
+                                    desc,
+                                    idTipo,
+                                    latitudActual,
+                                    longitudActual
+                            );
                         }
                     }
                 })
@@ -862,34 +961,52 @@ public class HomeActivity extends BaseActivity {
                 .show();
     }
 
+    private void enviarReporteApi(
+            String desc,
+            int idTipo,
+            double latitud,
+            double longitud
+    ) {
 
-    private void enviarReporteApi(String desc, int idTipo, double latitud, double longitud) {
+        JSONObject json = new JSONObject();
 
-        org.json.JSONObject json = new org.json.JSONObject();
         try {
             json.put("ID_Tipo", idTipo);
             json.put("Descripcion", desc);
             json.put("Latitud", latitud);
             json.put("Longitud", longitud);
-        } catch (org.json.JSONException ignored) {}
+
+        } catch (org.json.JSONException ignored) {
+        }
 
         ApiClient.post("api/Reportes", json, respuesta -> {
-            if (isFinishing() || isDestroyed()) return;
+
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
 
             String msj;
 
             if (respuesta.networkError) {
+
                 msj = "Error de conexión con la API";
+
             } else if (respuesta.isSuccess()) {
+
                 msj = "¡Reporte enviado exitosamente!";
 
                 cargarReportesEnMapa();
 
             } else {
+
                 msj = "Error HTTP: " + respuesta.code;
             }
 
-            android.widget.Toast.makeText(this, msj, android.widget.Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    this,
+                    msj,
+                    Toast.LENGTH_SHORT
+            ).show();
         });
     }
 
@@ -902,6 +1019,7 @@ public class HomeActivity extends BaseActivity {
             }
 
             if (!respuesta.isSuccess()) {
+
                 String mensaje;
 
                 if (respuesta.networkError) {
@@ -910,18 +1028,18 @@ public class HomeActivity extends BaseActivity {
                     mensaje = "GET: Error HTTP " + respuesta.code;
                 }
 
-                android.widget.Toast.makeText(
+                Toast.makeText(
                         this,
                         mensaje,
-                        android.widget.Toast.LENGTH_LONG
+                        Toast.LENGTH_LONG
                 ).show();
 
                 return;
             }
 
-            JSONArray reportes = respuesta.array;   // la API devuelve una lista
+            JSONArray reportes = respuesta.array;
 
-            // Eliminar los marcadores de reportes anteriores
+            // Eliminar solamente los marcadores de reportes anteriores.
             mapView.getOverlays().removeAll(marcadoresReportes);
             marcadoresReportes.clear();
 
@@ -935,39 +1053,89 @@ public class HomeActivity extends BaseActivity {
                     continue;
                 }
 
-                if (filtroTipoSeleccionado != 0 && reporte.optInt("idTipo", -1) != filtroTipoSeleccionado) {
+                if (filtroTipoSeleccionado != 0
+                        && reporte.optInt("idTipo", -1)
+                        != filtroTipoSeleccionado) {
+
                     continue;
                 }
 
-                double latitud = reporte.optDouble("latitud", Double.NaN);
-                double longitud = reporte.optDouble("longitud", Double.NaN);
+                double latitud =
+                        reporte.optDouble("latitud", Double.NaN);
 
-                if (Double.isNaN(latitud) || Double.isNaN(longitud)) {
+                double longitud =
+                        reporte.optDouble("longitud", Double.NaN);
+
+                if (Double.isNaN(latitud)
+                        || Double.isNaN(longitud)) {
+
                     continue;
                 }
 
-                String ubicacionTexto = reporte.optString("ubicacionTexto", "").trim();
+                String ubicacionTexto =
+                        reporte.optString("ubicacionTexto", "").trim();
+
                 String detalleUbicacion;
 
-                if (ubicacionTexto.isEmpty() || ubicacionTexto.equalsIgnoreCase("null")) {
-                    detalleUbicacion = "<b>Ubicación GPS:</b> " + latitud + ", " + longitud;
+                if (ubicacionTexto.isEmpty()
+                        || ubicacionTexto.equalsIgnoreCase("null")) {
+
+                    detalleUbicacion =
+                            "<b>Ubicación GPS:</b> "
+                                    + latitud + ", " + longitud;
+
                 } else {
-                    detalleUbicacion = "<b>Ubicación:</b> " +
-                            android.text.TextUtils.htmlEncode(ubicacionTexto);
+
+                    detalleUbicacion =
+                            "<b>Ubicación:</b> "
+                                    + android.text.TextUtils.htmlEncode(
+                                    ubicacionTexto
+                            );
                 }
 
+                // Crear marcador del reporte.
                 Marker marcador = new Marker(mapView);
-                marcador.setPosition(new GeoPoint(latitud, longitud));
-                String descripcion = reporte.optString("descripcion", "Sin descripción");
-                String estado = reporte.optString("estado", "Desconocido");
-                String fechaOriginal = reporte.optString("fechaReporte", "");
+
+                marcador.setPosition(
+                        new GeoPoint(latitud, longitud)
+                );
+
+                // Icono naranja para diferenciar los reportes.
+                marcador.setIcon(
+                        ContextCompat.getDrawable(
+                                this,
+                                R.drawable.ic_reporte_obstaculo
+                        )
+                );
+
+                String descripcion =
+                        reporte.optString(
+                                "descripcion",
+                                "Sin descripción"
+                        );
+
+                String estado =
+                        reporte.optString(
+                                "estado",
+                                "Desconocido"
+                        );
+
+                String fechaOriginal =
+                        reporte.optString("fechaReporte", "");
+
                 String fecha = "Sin fecha";
                 String hora = "Sin hora";
 
                 if (fechaOriginal.length() >= 10) {
-                    String anio = fechaOriginal.substring(0, 4);
-                    String mes = fechaOriginal.substring(5, 7);
-                    String dia = fechaOriginal.substring(8, 10);
+
+                    String anio =
+                            fechaOriginal.substring(0, 4);
+
+                    String mes =
+                            fechaOriginal.substring(5, 7);
+
+                    String dia =
+                            fechaOriginal.substring(8, 10);
 
                     fecha = dia + "/" + mes + "/" + anio;
 
@@ -976,102 +1144,281 @@ public class HomeActivity extends BaseActivity {
                     }
                 }
 
-                marcador.setTitle(reporte.optString("tipoObstaculo", "Obstáculo"));
-
-                /** código para guardar el ID del reporte en el marcador y decirle que abra el diálogo DE verificacionDE OBSTACULO al tocarlo: AGUSTIN*/
-                marcador.setId(String.valueOf(reporte.optInt("idReporte", -1)));
-                marcador.setOnMarkerClickListener((marker, mapView) -> {
-                    marker.showInfoWindow(); // Muestra el cartelito normal con la info
-
-                    int id = Integer.parseInt(marker.getId());
-                    if (id != -1) {
-                        mostrarDialogoValidacion(id); // Llama al diálogo que creaste
-                    }
-                    return true;
-                });
-
-                marcador.setSnippet(
-                        "<b>Descripción:</b> " + android.text.TextUtils.htmlEncode(descripcion) +
-                                "<br><br><b>Estado:</b> " + estado +
-                                "<br><b>Fecha:</b> " + fecha +
-                                "<br><b>Hora:</b> " + hora +
-                                "<br><br>" + detalleUbicacion
+                marcador.setTitle(
+                        reporte.optString(
+                                "tipoObstaculo",
+                                "Obstáculo"
+                        )
                 );
 
+                // Guardamos el ID del reporte en el marcador.
+                marcador.setId(
+                        String.valueOf(
+                                reporte.optInt("idReporte", -1)
+                        )
+                );
+
+                final String tipoFinal = reporte.optString(
+                        "tipoObstaculo", "Obstáculo"
+                );
+
+                final String descripcionFinal = descripcion;
+                final String estadoFinal = estado;
+                final String fechaFinal = fecha;
+                final String horaFinal = hora;
+                final String ubicacionFinal = detalleUbicacion;
+
+                // Al tocar el marcador, mostramos la información
+                // y abrimos el diálogo de validación.
+                marcador.setOnMarkerClickListener(
+                        (marker, mapView) -> {
+
+
+
+                            int id = Integer.parseInt(marker.getId());
+
+                            if (id != -1) {
+                                mostrarDialogoDetallesReporte(
+                                        id,
+                                        tipoFinal,
+                                        descripcionFinal,
+                                        estadoFinal,
+                                        fechaFinal,
+                                        horaFinal,
+                                        ubicacionFinal
+                                );
+                            }
+
+                            return true;
+                        }
+                );
+                // Información que aparece al tocar el marcador.
+                marcador.setSnippet(
+                        "<b>Descripción:</b> "
+                                + android.text.TextUtils.htmlEncode(
+                                descripcion
+                        )
+                                + "<br><br><b>Estado:</b> " + estado
+                                + "<br><b>Fecha:</b> " + fecha
+                                + "<br><b>Hora:</b> " + hora
+                                + "<br><br>" + detalleUbicacion
+                );
+
+                // Agregamos el marcador al mapa.
                 mapView.getOverlays().add(marcador);
+
+                // Lo guardamos para poder eliminarlo al actualizar.
                 marcadoresReportes.add(marcador);
 
                 reportesMostrados++;
             }
 
-            if (reportesMostrados == 0 && filtroTipoSeleccionado != 0) {
+            if (reportesMostrados == 0
+                    && filtroTipoSeleccionado != 0) {
 
-                Toast.makeText(this,
+                Toast.makeText(
+                        this,
                         "No se encontraron obstáculos de la categoría seleccionada.",
-                        Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT
+                ).show();
             }
+
             mapView.invalidate();
         });
     }
 
     private void irAlLogin() {
+
         Intent intent = new Intent(this, LoginActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
         startActivity(intent);
         finish();
     }
+
     private void mostrarDialogoValidacion(int idReporte) {
+
         Dialog dialog = new Dialog(this);
+
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.dialog_validar_obstaculo);
 
-        // Ajustar el ancho del diálogo
-        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.setContentView(
+                R.layout.dialog_validar_obstaculo
+        );
 
-        Button btnSigue = dialog.findViewById(R.id.btnSigueExistiendo);
-        Button btnNoExiste = dialog.findViewById(R.id.btnYaNoExiste);
-        EditText etComentario = dialog.findViewById(R.id.etComentarioValidacion);
+        dialog.getWindow().setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+
+        Button btnSigue =
+                dialog.findViewById(R.id.btnSigueExistiendo);
+
+        Button btnNoExiste =
+                dialog.findViewById(R.id.btnYaNoExiste);
+
+        EditText etComentario =
+                dialog.findViewById(R.id.etComentarioValidacion);
 
         btnSigue.setOnClickListener(v -> {
-            String comentario = etComentario.getText().toString().trim();
-            enviarValidacionAPI(idReporte, "Sigue existiendo", comentario);
+
+            String comentario =
+                    etComentario.getText().toString().trim();
+
+            enviarValidacionAPI(
+                    idReporte,
+                    "Sigue existiendo",
+                    comentario
+            );
+
             dialog.dismiss();
         });
 
         btnNoExiste.setOnClickListener(v -> {
-            String comentario = etComentario.getText().toString().trim();
-            enviarValidacionAPI(idReporte, "Ya no existe", comentario);
+
+            String comentario =
+                    etComentario.getText().toString().trim();
+
+            enviarValidacionAPI(
+                    idReporte,
+                    "Ya no existe",
+                    comentario
+            );
+
             dialog.dismiss();
         });
 
         dialog.show();
     }
-    private void enviarValidacionAPI(int idReporte, String tipoVoto, String comentario) {
+
+
+    private void mostrarDialogoDetallesReporte(
+            int idReporte,
+            String tipo,
+            String descripcion,
+            String estado,
+            String fecha,
+            String hora,
+            String ubicacion
+    ) {
+
+        Dialog dialog = new Dialog(this);
+
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_detalles_reporte);
+
+        TextView tvTipo = dialog.findViewById(R.id.tvDetalleTipo);
+        TextView tvDescripcion = dialog.findViewById(R.id.tvDetalleDescripcion);
+        TextView tvEstado = dialog.findViewById(R.id.tvDetalleEstado);
+        TextView tvFechaHora = dialog.findViewById(R.id.tvDetalleFechaHora);
+        TextView tvUbicacion = dialog.findViewById(R.id.tvDetalleUbicacion);
+
+        Button btnValidar = dialog.findViewById(R.id.btnValidarReporte);
+        Button btnCerrar = dialog.findViewById(R.id.btnCerrarDetalles);
+
+        // Cargamos los datos del reporte.
+        tvTipo.setText(tipo);
+        tvDescripcion.setText(descripcion);
+        tvEstado.setText(estado);
+        tvFechaHora.setText(fecha + " - " + hora);
+        tvUbicacion.setText(ubicacion);
+
+        // Abrimos la ventana de validación existente.
+        btnValidar.setOnClickListener(v -> {
+            dialog.dismiss();
+            mostrarDialogoValidacion(idReporte);
+        });
+
+        // Cerramos los detalles.
+        btnCerrar.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(
+                    android.R.color.transparent
+            );
+
+            dialog.getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
+    }
+
+
+    private void enviarValidacionAPI(
+            int idReporte,
+            String tipoVoto,
+            String comentario
+    ) {
 
         JSONObject json = new JSONObject();
+
         try {
+
             json.put("idReporte", idReporte);
+
             json.put("tipoVoto", tipoVoto);
-            json.put("comentarioEvidencia", comentario.isEmpty() ? JSONObject.NULL : comentario);
+
+            json.put(
+                    "comentarioEvidencia",
+                    comentario.isEmpty()
+                            ? JSONObject.NULL
+                            : comentario
+            );
+
         } catch (org.json.JSONException ignored) {
         }
 
-        // ApiClient agrega el token, usa la URL central y maneja el 401 (sesión vencida).
-        ApiClient.post("api/Reportes/validar", json, respuesta -> {
-            if (!activityViva()) {
-                return;
-            }
+        ApiClient.post(
+                "api/Reportes/validar",
+                json,
+                respuesta -> {
 
-            if (respuesta.networkError) {
-                Toast.makeText(this, "Error de conexión con el servidor.", Toast.LENGTH_SHORT).show();
-            } else if (respuesta.code == 200) {
-                Toast.makeText(this, "¡Gracias! Tu validación fue registrada.", Toast.LENGTH_SHORT).show();
-                cargarReportesEnMapa();
-            } else if (respuesta.code == 400) {
-                Toast.makeText(this, "No se permiten votos duplicados en el mismo reporte.", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(this, "Error al validar el reporte.", Toast.LENGTH_SHORT).show();
-            }
-        });
+                    if (!activityViva()) {
+                        return;
+                    }
+
+                    if (respuesta.networkError) {
+
+                        Toast.makeText(
+                                this,
+                                "Error de conexión con el servidor.",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                    } else if (respuesta.code == 200) {
+
+                        Toast.makeText(
+                                this,
+                                "¡Gracias! Tu validación fue registrada.",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        cargarReportesEnMapa();
+
+                    } else if (respuesta.code == 400) {
+
+                        Toast.makeText(
+                                this,
+                                "No se permiten votos duplicados en el mismo reporte.",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                    } else {
+
+                        Toast.makeText(
+                                this,
+                                "Error al validar el reporte.",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+        );
     }
 }
