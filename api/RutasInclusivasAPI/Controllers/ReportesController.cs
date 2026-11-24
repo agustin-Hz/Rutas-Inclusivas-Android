@@ -293,7 +293,7 @@ namespace RutasInclusivasAPI.Controllers
                     FROM REPORTES r
                     INNER JOIN TIPOS_OBSTACULO t
                     ON r.ID_Tipo = t.ID_Tipo
-                    WHERE r.Estado = 'Activo'
+                    WHERE r.Estado = 'Activo' OR r.Estado = 'Verificado'
                     ORDER BY r.Fecha_Reporte DESC";
 
                     using (MySqlCommand comando = new MySqlCommand(query, conexion))

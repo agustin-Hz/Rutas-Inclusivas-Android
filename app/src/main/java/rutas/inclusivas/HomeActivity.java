@@ -1100,14 +1100,6 @@ public class HomeActivity extends BaseActivity {
                         new GeoPoint(latitud, longitud)
                 );
 
-                // Icono naranja para diferenciar los reportes.
-                marcador.setIcon(
-                        ContextCompat.getDrawable(
-                                this,
-                                R.drawable.ic_reporte_obstaculo
-                        )
-                );
-
                 String descripcion =
                         reporte.optString(
                                 "descripcion",
@@ -1119,6 +1111,22 @@ public class HomeActivity extends BaseActivity {
                                 "estado",
                                 "Desconocido"
                         );
+
+                if (estado.equalsIgnoreCase("Verificado")) {
+                    marcador.setIcon(
+                            ContextCompat.getDrawable(
+                                    this,
+                                    R.drawable.ic_reporte_verificado
+                            )
+                    );
+                } else {
+                    marcador.setIcon(
+                            ContextCompat.getDrawable(
+                                    this,
+                                    R.drawable.ic_reporte_obstaculo
+                            )
+                    );
+                }
 
                 String fechaOriginal =
                         reporte.optString("fechaReporte", "");
@@ -1166,7 +1174,13 @@ public class HomeActivity extends BaseActivity {
                 final String estadoFinal = estado;
                 final String fechaFinal = fecha;
                 final String horaFinal = hora;
-                final String ubicacionFinal = detalleUbicacion;
+                final String ubicacionFinal;
+
+                if (ubicacionTexto.isEmpty() || ubicacionTexto.equalsIgnoreCase("null")) {
+                    ubicacionFinal = latitud + ", " + longitud;
+                } else {
+                    ubicacionFinal = ubicacionTexto;
+                }
 
                 // Al tocar el marcador, mostramos la información
                 // y abrimos el diálogo de validación.
