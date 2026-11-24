@@ -396,7 +396,7 @@ public class HomeActivity extends BaseActivity {
 
         // Cerrar sesión.
         btnCerrar.setOnClickListener(v -> {
-            sesion.cerrarSesion();
+            ApiClient.cerrarSesion(); // también avisa a la API
             irAlLogin();
         });
     }

@@ -16,7 +16,6 @@ import androidx.core.view.WindowInsetsCompat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.time.Instant;
 
 public class LoginActivity extends BaseActivity {
 
@@ -121,31 +120,9 @@ public class LoginActivity extends BaseActivity {
         });
     }
 
-    /** Lee {accessToken, expiraEn, usuario{id,nombre,correo,zona}} y lo guarda. */
+    /** Guarda los tokens y los datos del usuario que devuelve el login. */
     private boolean guardarSesion(JSONObject body) {
-        try {
-            String token = body.getString("accessToken");
-            JSONObject usuario = body.getJSONObject("usuario");
-
-            long expiraMs;
-            try {
-                expiraMs = Instant.parse(body.getString("expiraEn")).toEpochMilli();
-            } catch (Exception e) {
-                expiraMs = System.currentTimeMillis() + 15 * 60 * 1000L; // por defecto de la API
-            }
-
-            String zona = usuario.isNull("zona") ? "" : usuario.getString("zona");
-            new SessionManager(this).guardar(
-                    token,
-                    expiraMs,
-                    usuario.getInt("id"),
-                    usuario.getString("nombre"),
-                    usuario.getString("correo"),
-                    zona);
-            return true;
-        } catch (JSONException e) {
-            return false;
-        }
+        return new SessionManager(this).guardarDesdeApi(body);
     }
 
     private void setCargando(boolean cargando) {

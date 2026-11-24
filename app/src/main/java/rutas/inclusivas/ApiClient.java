@@ -36,8 +36,9 @@ import java.util.List;
  * Cliente HTTP para hablar con RutasInclusivasAPI.
  * La app NUNCA se conecta directo a MySQL: todo pasa por la API.
 
- * Si un pedido con sesión recibe 401 (token vencido o inválido), ApiClient cierra
- * la sesión y lleva al login. En ese caso el callback de la pantalla NO se ejecuta.
+ * Si un pedido con sesión recibe 401, se renueva el token con el refresh token y se
+ * repite el pedido. Si no se puede renovar, se cierra la sesión y se va al login
+ * (en ese caso el callback de la pantalla no se ejecuta).
  */
 public final class ApiClient {
 
@@ -218,16 +219,83 @@ public final class ApiClient {
 
         EXECUTOR.execute(() -> {
             // [hilo secundario] pedido HTTP
-            Response response = ejecutar(metodo, path, json, token);
+            Response primera = ejecutar(metodo, path, json, token);
+            Response response = primera;
 
+            // Token vencido: lo renovamos y repetimos el pedido
+            if (conSesion && primera.code == 401) {
+                Response refresco = refrescarToken(token);
+                if (refresco.isSuccess()) {
+                    String nuevoToken = new SessionManager(appContext).getToken();
+                    response = ejecutar(metodo, path, json, nuevoToken);
+                } else if (refresco.networkError) {
+                    // Si no hay internet no cerramos la sesión
+                    response = refresco;
+                }
+                // Si el refresh dio 401, queda el 401 y se va al login
+            }
+
+            final Response resultado = response;
             MAIN.post(() -> {
-                // [hilo principal] token vencido o inválido: login
-                if (conSesion && response.code == 401 && manejarSesionExpirada()) {
+                // [hilo principal] no se pudo renovar el token: login
+                if (conSesion && resultado.code == 401 && manejarSesionExpirada()) {
                     return;
                 }
-                callback.onResult(response);
+                callback.onResult(resultado);
             });
         });
+    }
+
+    /**
+     * Pide tokens nuevos a la API con el refresh token (hilo secundario).
+     * Es synchronized para que, si dos pedidos dan 401 juntos, renueve uno solo.
+     */
+    private static synchronized Response refrescarToken(String tokenUsado) {
+        SessionManager sesion = new SessionManager(appContext);
+
+        // Otro pedido ya lo renovó mientras esperábamos
+        String actual = sesion.getToken();
+        if (actual != null && !actual.equals(tokenUsado)) {
+            return new Response(200, new JSONObject(), new JSONArray(), false);
+        }
+
+        String refresh = sesion.getRefreshToken();
+        if (refresh == null) {
+            return new Response(401, new JSONObject(), new JSONArray(), false);
+        }
+
+        JSONObject json = new JSONObject();
+        try {
+            json.put("RefreshToken", refresh);
+        } catch (JSONException e) {
+            return new Response(401, new JSONObject(), new JSONArray(), false);
+        }
+
+        Response r = ejecutar("POST", "api/Auth/refresh", json, null);
+        if (r.isSuccess() && !sesion.guardarDesdeApi(r.body)) {
+            // Respondió 200 pero sin los datos que esperamos
+            return new Response(401, new JSONObject(), new JSONArray(), false);
+        }
+        return r;
+    }
+
+    /**
+     * Cierra la sesión: borra los datos del celular y avisa a la API para que
+     * el refresh token deje de servir. Si no hay internet, se sale igual.
+     */
+    public static void cerrarSesion() {
+        SessionManager sesion = new SessionManager(appContext);
+        String refresh = sesion.getRefreshToken();
+        sesion.cerrarSesion();
+
+        if (refresh == null) return;
+        JSONObject json = new JSONObject();
+        try {
+            json.put("RefreshToken", refresh);
+        } catch (JSONException e) {
+            return;
+        }
+        EXECUTOR.execute(() -> ejecutar("POST", "api/Auth/logout", json, null));
     }
 
     /** Arma, envía y lee un pedido HTTP. Se ejecuta en un hilo secundario. */

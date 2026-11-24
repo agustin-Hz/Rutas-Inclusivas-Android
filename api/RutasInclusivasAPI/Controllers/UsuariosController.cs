@@ -216,6 +216,17 @@ namespace RutasInclusivasAPI.Controllers
                         if (filas == 0)
                             return NotFound(new { mensaje = "Usuario no encontrado o ya inactivo" });
                     }
+
+                    // La cuenta se desactiva: se cierran todas sus sesiones
+                    string queryRevocar = @"UPDATE REFRESH_TOKENS
+                                            SET RevocadoEn = UTC_TIMESTAMP()
+                                            WHERE ID_Usuario = @Id AND RevocadoEn IS NULL";
+
+                    using (MySqlCommand cmdRevocar = new MySqlCommand(queryRevocar, conexion))
+                    {
+                        cmdRevocar.Parameters.AddWithValue("@Id", id);
+                        await cmdRevocar.ExecuteNonQueryAsync();
+                    }
                 }
 
                 return Ok(new { mensaje = "Cuenta dada de baja correctamente" });
