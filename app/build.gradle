@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -17,13 +18,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-
-
-
         buildConfigField "String", "API_BASE_URL", "\"http://10.0.2.2:5126/\""
-
-
-
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -41,9 +36,10 @@ android {
 }
 
 dependencies {
-
     implementation 'org.osmdroid:osmdroid-android:6.1.20'
     implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation platform(libs.firebase.bom)
+    implementation libs.firebase.messaging
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "309194427051",
+    "project_id": "rutas-inclusivas",
+    "storage_bucket": "rutas-inclusivas.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:309194427051:android:95936b9fe3d0e119ff85ee",
+        "android_client_info": {
+          "package_name": "rutas.inclusivas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6VD0XwHPx-G7SmIkV-QcQlwDfP_A4AHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

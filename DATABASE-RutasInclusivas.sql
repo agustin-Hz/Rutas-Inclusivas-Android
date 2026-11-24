@@ -92,3 +92,12 @@ VALUES
 (4, 'Semáforo sonoro averiado', 'Semáforos con señalización sonora fuera de servicio'),
 (5, 'Obra sin paso accesible', 'Obras que impiden el paso seguro de peatones')
 ON DUPLICATE KEY UPDATE ID_Tipo = ID_Tipo;
+
+-- Dispositivos para notificaciones push (un token FCM por dispositivo)
+CREATE TABLE IF NOT EXISTS DISPOSITIVOS_FCM (
+    ID_Dispositivo INT AUTO_INCREMENT PRIMARY KEY,
+    ID_Usuario INT NOT NULL,
+    Token VARCHAR(255) NOT NULL UNIQUE,
+    Fecha_Registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ID_Usuario) REFERENCES USUARIOS(ID_Usuario) ON DELETE CASCADE
+);
