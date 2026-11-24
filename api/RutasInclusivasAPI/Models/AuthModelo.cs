@@ -27,4 +27,10 @@ namespace RutasInclusivasAPI.Models
         [Required]
         public string NuevaContrasena { get; set; } = string.Empty;
     }
+
+    public class RefreshRequest
+    {
+        [Required]
+        public string RefreshToken { get; set; } = string.Empty;
+    }
 }
