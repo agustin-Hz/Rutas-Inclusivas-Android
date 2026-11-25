@@ -14,12 +14,20 @@ namespace RutasInclusivasAPI.Controllers
     {
         private readonly string _cadenaConexion;
         private readonly NotificacionService _notificaciones;
+        private readonly IWebHostEnvironment _entorno;
+        private readonly ILogger<NotificacionesController> _logger;
 
-        public NotificacionesController(IConfiguration config, NotificacionService notificaciones)
+        public NotificacionesController(
+            IConfiguration config,
+            NotificacionService notificaciones,
+            IWebHostEnvironment entorno,
+            ILogger<NotificacionesController> logger)
         {
             _cadenaConexion = config.GetConnectionString("ConexionMySQL")
                 ?? throw new InvalidOperationException("Falta configurar ConexionMySQL");
             _notificaciones = notificaciones;
+            _entorno = entorno;
+            _logger = logger;
         }
 
         private bool TryObtenerIdUsuario(out int idUsuario)
@@ -86,11 +94,13 @@ namespace RutasInclusivasAPI.Controllers
             }
         }
 
-        // TEMPORAL: para probar de punta a punta desde Swagger.
-        // Borralo cuando conectes los eventos reales.
+        // Solo para probar de punta a punta desde Swagger: únicamente existe en Development.
         [HttpPost("prueba")]
         public async Task<IActionResult> Prueba()
         {
+            if (!_entorno.IsDevelopment())
+                return NotFound();
+
             if (!TryObtenerIdUsuario(out int idUsuario))
                 return Unauthorized(new { mensaje = "Usuario no identificado" });
 
@@ -103,8 +113,8 @@ namespace RutasInclusivasAPI.Controllers
             }
             catch (Exception ex)
             {
-                // Solo para depurar: muestra el motivo real del fallo (credenciales, red, etc.).
-                return StatusCode(500, new { mensaje = ex.Message });
+                _logger.LogError(ex, "Falló la notificación de prueba");
+                return StatusCode(500, new { mensaje = "No se pudo enviar la notificación de prueba" });
             }
         }
     }

@@ -166,20 +166,24 @@ public class PerfilActivity extends BaseActivity {
     }
     private void darDeBaja() {
         setCargando(true);
-        ApiClient.delete("api/Usuarios/" + sesion.getId() + "/logica", respuesta -> {
-            if (isFinishing() || isDestroyed()) return;
-            setCargando(false);
 
-            if (respuesta.networkError) {
-                Toast.makeText(this, R.string.error_sin_conexion, Toast.LENGTH_LONG).show();
-            } else if (respuesta.isSuccess()) {
-                Toast.makeText(this, R.string.perfil_baja_ok, Toast.LENGTH_LONG).show();
-                sesion.cerrarSesion();
-                irAlLogin();
-            } else {
-                Toast.makeText(this, R.string.error_servidor, Toast.LENGTH_LONG).show();
-            }
-        });
+        // Primero se da de baja el token FCM (necesita el JWT) y después la cuenta.
+        FcmRegistro.darDeBaja(() ->
+                ApiClient.delete("api/Usuarios/" + sesion.getId() + "/logica", respuesta -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    setCargando(false);
+
+                    if (respuesta.networkError) {
+                        Toast.makeText(this, R.string.error_sin_conexion, Toast.LENGTH_LONG).show();
+                    } else if (respuesta.isSuccess()) {
+                        Toast.makeText(this, R.string.perfil_baja_ok, Toast.LENGTH_LONG).show();
+                        sesion.cerrarSesion();
+                        irAlLogin();
+                    } else {
+                        Toast.makeText(this, R.string.error_servidor, Toast.LENGTH_LONG).show();
+                    }
+                })
+        );
     }
 
     // Utilidades

@@ -3,6 +3,7 @@ using RutasInclusivasAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using MySqlConnector;
+using RutasInclusivasAPI.Services;
 
 namespace RutasInclusivasAPI.Controllers
 {
@@ -11,11 +12,57 @@ namespace RutasInclusivasAPI.Controllers
     public class ReportesController : ControllerBase
     {
         private readonly string _cadenaConexion;
+        private readonly NotificacionService _notificaciones;
+        private readonly ILogger<ReportesController> _logger;
 
-        public ReportesController(IConfiguration config)
+        public ReportesController(
+            IConfiguration config,
+            NotificacionService notificaciones,
+            ILogger<ReportesController> logger)
         {
             _cadenaConexion = config.GetConnectionString("ConexionMySQL")
                 ?? throw new InvalidOperationException("Falta configurar ConexionMySQL");
+            _notificaciones = notificaciones;
+            _logger = logger;
+        }
+
+        // Avisa a los demás usuarios que se registró un nuevo obstáculo.
+        // Si Firebase falla, el reporte ya está guardado: solo se registra el error en el log.
+        private async Task NotificarNuevoReporteAsync(
+            MySqlConnection conexion, int idUsuario, ReporteRegistro reporte)
+        {
+            try
+            {
+                string tipo = "Obstáculo";
+
+                using (var cmd = new MySqlCommand(
+                    "SELECT Nombre FROM TIPOS_OBSTACULO WHERE ID_Tipo = @IdTipo", conexion))
+                {
+                    cmd.Parameters.AddWithValue("@IdTipo", reporte.ID_Tipo);
+                    object? resultado = await cmd.ExecuteScalarAsync();
+
+                    if (resultado != null && resultado != DBNull.Value)
+                    {
+                        tipo = Convert.ToString(resultado) ?? tipo;
+                    }
+                }
+
+                string cuerpo = tipo;
+
+                if (!string.IsNullOrWhiteSpace(reporte.Ubicacion_Texto))
+                {
+                    string ubicacion = reporte.Ubicacion_Texto.Trim();
+                    if (ubicacion.Length > 120) ubicacion = ubicacion.Substring(0, 120);
+                    cuerpo = $"{tipo} en {ubicacion}";
+                }
+
+                await _notificaciones.EnviarATodosExceptoAsync(
+                    idUsuario, "Nuevo obstáculo reportado", cuerpo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "No se pudo enviar la notificación del nuevo reporte");
+            }
         }
 
         [HttpPost]
@@ -81,10 +128,15 @@ namespace RutasInclusivasAPI.Controllers
                             });
                         }
 
+                        long idReporte = comando.LastInsertedId;
+
+                        // Notificación push a los demás usuarios (no afecta la respuesta si falla).
+                        await NotificarNuevoReporteAsync(conexion, idUsuario, reporte);
+
                         return StatusCode(201, new
                         {
                             mensaje = "Reporte registrado correctamente",
-                            idReporte = comando.LastInsertedId
+                            idReporte
                         });
                     }
                 }
@@ -450,7 +502,8 @@ namespace RutasInclusivasAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { mensaje = "Error al procesar la validación", detalle = ex.Message });
+                _logger.LogError(ex, "Error al procesar la validación del reporte");
+                return StatusCode(500, new { mensaje = "Error al procesar la validación" });
             }
         }
     }

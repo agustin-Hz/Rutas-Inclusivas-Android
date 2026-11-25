@@ -15,6 +15,8 @@ import androidx.core.content.ContextCompat;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+
+
 public class RutasFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String CHANNEL_ID = "rutas_inclusivas_notificaciones";
@@ -24,7 +26,8 @@ public class RutasFirebaseMessagingService extends FirebaseMessagingService {
         super.onNewToken(token);
 
         // Firebase llama a este método cuando genera o renueva el token.
-        // Sin sesión no hay a quién asociarlo: HomeActivity lo registra al próximo ingreso.
+        // Sin sesión no hay a quién asociarlo: HomeActivity llama a
+        // FcmRegistro.registrarTokenActual() en cada ingreso y lo asocia entonces.
         if (new SessionManager(this).haySesionValida()) {
             FcmRegistro.enviarToken(token);
         }
@@ -68,7 +71,6 @@ public class RutasFirebaseMessagingService extends FirebaseMessagingService {
     private void mostrarNotificacion(String titulo, String mensaje) {
 
         crearCanalNotificaciones();
-
         // Android 13 o superior requiere permiso de notificaciones.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 ContextCompat.checkSelfPermission(

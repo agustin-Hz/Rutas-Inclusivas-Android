@@ -1,4 +1,3 @@
-
 package rutas.inclusivas;
 
 import android.Manifest;
@@ -7,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,6 +73,7 @@ public class HomeActivity extends BaseActivity {
     private final List<Marker> marcadoresReportes = new ArrayList<>();
 
     private ActivityResultLauncher<String[]> solicitarPermisosUbicacion;
+    private ActivityResultLauncher<String> solicitarPermisoNotificaciones;
     private ActivityResultLauncher<Intent> compararRutasLauncher;
     private ActivityResultLauncher<Intent> seleccionarUbicacionLauncher;
     private CancellationTokenSource tokenUbicacion;
@@ -100,6 +101,9 @@ public class HomeActivity extends BaseActivity {
             irAlLogin();
             return;
         }
+
+        // Sincroniza el token FCM de este dispositivo con la API.
+        FcmRegistro.registrarTokenActual();
 
         EdgeToEdge.enable(this);
 
@@ -146,6 +150,17 @@ public class HomeActivity extends BaseActivity {
         panelRuta = findViewById(R.id.panelRuta);
         tvDistanciaRuta = findViewById(R.id.tvDistanciaRuta);
         tvTiempoRuta = findViewById(R.id.tvTiempoRuta);
+
+        // Permiso de notificaciones (Android 13+).
+        solicitarPermisoNotificaciones =
+                registerForActivityResult(
+                        new ActivityResultContracts.RequestPermission(),
+                        concedido -> {
+                            // Si lo niega, la app sigue funcionando; solo no mostrará avisos.
+                            // El token FCM ya está registrado, así que si lo activa
+                            // después desde Ajustes, empieza a recibirlos sin más pasos.
+                        }
+                );
 
         solicitarPermisosUbicacion =
                 registerForActivityResult(
@@ -287,6 +302,7 @@ public class HomeActivity extends BaseActivity {
 
         inicializarMapa();
         verificarPermisosUbicacion();
+        verificarPermisoNotificaciones();
         cargarReportesEnMapa();
 
         tvSaludo = findViewById(R.id.tvSaludo);
@@ -396,8 +412,15 @@ public class HomeActivity extends BaseActivity {
 
         // Cerrar sesión.
         btnCerrar.setOnClickListener(v -> {
-            ApiClient.cerrarSesion(); // también avisa a la API
-            irAlLogin();
+            // Evita doble toque mientras se da de baja el token.
+            btnCerrar.setEnabled(false);
+
+            // Primero se da de baja el token FCM (necesita el JWT) y recién
+            // después se cierra la sesión.
+            FcmRegistro.darDeBaja(() -> {
+                ApiClient.cerrarSesion(); // también avisa a la API
+                irAlLogin();
+            });
         });
     }
 
@@ -453,6 +476,25 @@ public class HomeActivity extends BaseActivity {
         // El marcador azul se creará cuando obtengamos el GPS.
 
         mapView.invalidate();
+    }
+
+    private void verificarPermisoNotificaciones() {
+
+        // Antes de Android 13 el permiso no existe: las notificaciones están permitidas.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return;
+        }
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        solicitarPermisoNotificaciones.launch(
+                Manifest.permission.POST_NOTIFICATIONS
+        );
     }
 
     private void verificarPermisosUbicacion() {
