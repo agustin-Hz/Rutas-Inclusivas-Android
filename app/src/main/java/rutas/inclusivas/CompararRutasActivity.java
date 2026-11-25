@@ -13,21 +13,13 @@ public class CompararRutasActivity extends BaseActivity {
 
     private TextView tvDestino;
 
-    private Button btnTodasLasRutas;
-    private Button btnSoloAccesibles;
     private Button btnVerMapa;
 
-    private LinearLayout cardRuta1;
-    private LinearLayout cardRuta2;
-    private LinearLayout cardRuta3;
-
-    private LinearLayout rutaSeleccionada;
-
-    private static final int COLOR_AZUL = 0xFF0866D9;
-    private static final int COLOR_AZUL_CLARO = 0xFFE3EEFC;
-    private static final int COLOR_BLANCO = 0xFFFFFFFF;
-
-    private boolean filtroAccesibles = false;
+    private TextView tvEstadoAccesibilidad;
+    private TextView tvDistanciaRuta;
+    private TextView tvDuracionRuta;
+    private TextView tvCantidadObstaculos;
+    private TextView tvMensajeRuta;
 
     // Coordenadas del origen.
     private double latitudOrigen;
@@ -44,8 +36,8 @@ public class CompararRutasActivity extends BaseActivity {
     // Ruta recibida desde el backend.
     private Ruta rutaPeatonal;
 
-    private TextView tvDatosRuta1;
-    private TextView tvAccesibilidadRuta1;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,43 +68,17 @@ public class CompararRutasActivity extends BaseActivity {
         }
 
         // Obtener los filtros
-        btnTodasLasRutas = findViewById(R.id.btnTodasLasRutas);
-        btnSoloAccesibles = findViewById(R.id.btnSoloAccesibles);
+        // Obtener los elementos de información de la ruta
+        tvEstadoAccesibilidad = findViewById(R.id.tvEstadoAccesibilidad);
+        tvDistanciaRuta = findViewById(R.id.tvDistanciaRuta);
+        tvDuracionRuta = findViewById(R.id.tvDuracionRuta);
+        tvCantidadObstaculos = findViewById(R.id.tvCantidadObstaculos);
+        tvMensajeRuta = findViewById(R.id.tvMensajeRuta);
+
+// Botón para volver al mapa
         btnVerMapa = findViewById(R.id.btnVerMapa);
 
-        // Obtener las tarjetas
-        cardRuta1 = findViewById(R.id.cardRuta1);
-        cardRuta2 = findViewById(R.id.cardRuta2);
-        cardRuta3 = findViewById(R.id.cardRuta3);
 
-        tvDatosRuta1 = findViewById(R.id.tvDatosRuta1);
-        tvAccesibilidadRuta1 = findViewById(R.id.tvAccesibilidadRuta1);
-
-        // Mostrar todas las alternativas inicialmente
-        mostrarTodasLasRutas();
-
-        // Filtro: todas las rutas
-        btnTodasLasRutas.setOnClickListener(v ->
-                mostrarTodasLasRutas()
-        );
-
-        // Filtro: solo rutas accesibles verificadas
-        btnSoloAccesibles.setOnClickListener(v ->
-                mostrarSoloAccesibles()
-        );
-
-        // Seleccionar cada alternativa
-        cardRuta1.setOnClickListener(v ->
-                seleccionarRuta(cardRuta1)
-        );
-
-        cardRuta2.setOnClickListener(v ->
-                seleccionarRuta(cardRuta2)
-        );
-
-        cardRuta3.setOnClickListener(v ->
-                seleccionarRuta(cardRuta3)
-        );
 
         // Preparar el paso siguiente: abrir el mapa
         btnVerMapa.setOnClickListener(v ->
@@ -174,81 +140,7 @@ public class CompararRutasActivity extends BaseActivity {
         );
     }
 
-    private void mostrarTodasLasRutas() {
-        filtroAccesibles = false;
 
-        cardRuta1.setVisibility(View.VISIBLE);
-        cardRuta2.setVisibility(View.VISIBLE);
-        cardRuta3.setVisibility(View.VISIBLE);
-
-        btnTodasLasRutas.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(COLOR_AZUL)
-        );
-
-        btnTodasLasRutas.setTextColor(COLOR_BLANCO);
-
-        btnSoloAccesibles.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(COLOR_AZUL_CLARO)
-        );
-
-        btnSoloAccesibles.setTextColor(0xFF123B70);
-    }
-
-    private void mostrarSoloAccesibles() {
-        filtroAccesibles = true;
-
-        /*
-         * Todavía no tenemos rutas con accesibilidad
-         * verificada mediante datos reales.
-         *
-         * Por seguridad, no mostramos ninguna alternativa
-         * como accesible sin evidencia.
-         */
-        cardRuta1.setVisibility(View.GONE);
-        cardRuta2.setVisibility(View.GONE);
-        cardRuta3.setVisibility(View.GONE);
-
-        rutaSeleccionada = null;
-
-        btnSoloAccesibles.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(COLOR_AZUL)
-        );
-
-        btnSoloAccesibles.setTextColor(COLOR_BLANCO);
-
-        btnTodasLasRutas.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(COLOR_AZUL_CLARO)
-        );
-
-        btnTodasLasRutas.setTextColor(0xFF123B70);
-
-        Toast.makeText(
-                this,
-                "Todavía no hay rutas con accesibilidad verificada.",
-                Toast.LENGTH_LONG
-        ).show();
-    }
-
-    private void seleccionarRuta(LinearLayout tarjeta) {
-        if (filtroAccesibles) {
-            return;
-        }
-
-        // Restaurar el aspecto de la tarjeta anterior
-        if (rutaSeleccionada != null) {
-            rutaSeleccionada.setBackgroundColor(COLOR_BLANCO);
-        }
-
-        // Guardar y destacar la nueva selección
-        rutaSeleccionada = tarjeta;
-        rutaSeleccionada.setBackgroundColor(COLOR_AZUL_CLARO);
-
-        Toast.makeText(
-                this,
-                "Ruta seleccionada.",
-                Toast.LENGTH_SHORT
-        ).show();
-    }
 
     private void mostrarDatosRuta() {
 
@@ -256,47 +148,70 @@ public class CompararRutasActivity extends BaseActivity {
             return;
         }
 
-        // Convertir la distancia de metros a kilómetros.
+        // Convertir distancia de metros a kilómetros
         double distanciaKm =
                 rutaPeatonal.getDistanciaMetros() / 1000.0;
 
-        // Convertir la duración de segundos a minutos.
+        // Convertir duración de segundos a minutos
         int minutos = (int) Math.round(
                 rutaPeatonal.getDuracionSegundos() / 60.0
         );
 
-        // Mostrar los datos en la primera tarjeta.
-        tvDatosRuta1.setText(
+        // Mostrar distancia
+        tvDistanciaRuta.setText(
                 String.format(
                         java.util.Locale.getDefault(),
-                        "%.2f km - %d min",
-                        distanciaKm,
-                        minutos
+                        "%.2f km",
+                        distanciaKm
                 )
         );
 
-        // No afirmar que la ruta es accesible sin verificarla.
-        tvAccesibilidadRuta1.setText(
-                "Accesibilidad todavía no verificada"
-        );
-    }
+        // Mostrar duración
+        tvDuracionRuta.setText(minutos + " min");
 
+        // Mostrar cantidad de obstáculos
+        tvCantidadObstaculos.setText(
+                String.valueOf(rutaPeatonal.getCantidadObstaculos())
+        );
+
+        // Mostrar estado de accesibilidad
+        if (rutaPeatonal.isRutaLibre()) {
+
+            tvEstadoAccesibilidad.setText(
+                    "Ruta sin obstáculos registrados"
+            );
+
+            tvEstadoAccesibilidad.setTextColor(0xFF218838);
+
+        } else {
+
+            tvEstadoAccesibilidad.setText(
+                    "Alternativa con menos obstáculos"
+            );
+
+            tvEstadoAccesibilidad.setTextColor(0xFFD97706);
+        }
+
+        // Mostrar mensaje devuelto por el backend
+        tvMensajeRuta.setText(rutaPeatonal.getMensaje());
+    }
     private void abrirMapa() {
 
-        if (rutaSeleccionada == null) {
-            Toast.makeText(this,
-                    "Seleccioná una ruta antes de continuar.",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // Verificar que exista una ruta
+        if (rutaPeatonal == null ||
+                rutaPeatonal.getPuntos() == null ||
+                rutaPeatonal.getPuntos().isEmpty()) {
 
-        if (rutaPeatonal == null || rutaPeatonal.getPuntos() == null) {
-            Toast.makeText(this,
+            Toast.makeText(
+                    this,
                     "No hay una ruta disponible para mostrar.",
-                    Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT
+            ).show();
+
             return;
         }
 
+        // Obtener los puntos de la ruta
         int cantidadPuntos = rutaPeatonal.getPuntos().size();
 
         double[] latitudes = new double[cantidadPuntos];
@@ -310,10 +225,41 @@ public class CompararRutasActivity extends BaseActivity {
             longitudes[i] = punto.getLongitud();
         }
 
+        // Preparar los datos para devolver a HomeActivity
         Intent resultado = new Intent();
 
         resultado.putExtra("latitudesRuta", latitudes);
         resultado.putExtra("longitudesRuta", longitudes);
+
+        resultado.putExtra(
+                "distanciaMetros",
+                rutaPeatonal.getDistanciaMetros()
+        );
+
+        resultado.putExtra(
+                "duracionSegundos",
+                rutaPeatonal.getDuracionSegundos()
+        );
+
+        resultado.putExtra(
+                "cantidadObstaculos",
+                rutaPeatonal.getCantidadObstaculos()
+        );
+
+        resultado.putExtra(
+                "esRutaLibre",
+                rutaPeatonal.isRutaLibre()
+        );
+
+        resultado.putExtra(
+                "esAlternativaConMenosObstaculos",
+                rutaPeatonal.isAlternativaConMenosObstaculos()
+        );
+
+        resultado.putExtra(
+                "mensajeRuta",
+                rutaPeatonal.getMensaje()
+        );
 
         setResult(RESULT_OK, resultado);
         finish();

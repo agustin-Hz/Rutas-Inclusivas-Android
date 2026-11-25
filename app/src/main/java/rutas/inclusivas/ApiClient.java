@@ -101,6 +101,17 @@ public final class ApiClient {
 
                     double duracion =
                             json.getDouble("duracionSegundos");
+                    int cantidadObstaculos =
+                            json.getInt("cantidadObstaculos");
+
+                    boolean esRutaLibre =
+                            json.getBoolean("esRutaLibre");
+
+                    boolean esAlternativaConMenosObstaculos =
+                            json.getBoolean("esAlternativaConMenosObstaculos");
+
+                    String mensaje =
+                            json.getString("mensaje");
 
                     JSONArray puntosJson =
                             json.getJSONArray("puntos");
@@ -125,7 +136,11 @@ public final class ApiClient {
                     Ruta ruta = new Ruta(
                             distancia,
                             duracion,
-                            puntos
+                            puntos,
+                            cantidadObstaculos,
+                            esRutaLibre,
+                            esAlternativaConMenosObstaculos,
+                            mensaje
                     );
 
                     callback.onResult(ruta, null);
