@@ -13,7 +13,6 @@
     android:paddingTop="12dp"
     tools:context=".HomeActivity">
 
-
     <TextView
         android:id="@+id/tvSaludo"
         android:layout_width="match_parent"
@@ -61,7 +60,7 @@
 
     </LinearLayout>
 
-    <!-- Agregue esta tarjeta que es donde va a estar contenido el mapa -->
+    <!-- Tarjeta que contiene el mapa -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -73,14 +72,13 @@
         android:clipToOutline="true"
         android:elevation="3dp">
 
-        <!-- Esta es la vista del mapa -->
-
-
+        <!-- Mapa -->
         <org.osmdroid.views.MapView
             android:id="@+id/mapView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <!-- Etiqueta del mapa -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -108,7 +106,7 @@
             android:textSize="12sp"
             android:backgroundTint="#0866D9" />
 
-        <!-- Panel con información de la ruta -->
+        <!-- Panel compacto con información de la ruta -->
         <LinearLayout
             android:id="@+id/panelRuta"
             android:layout_width="match_parent"
@@ -116,7 +114,7 @@
             android:layout_gravity="bottom"
             android:layout_margin="12dp"
             android:orientation="vertical"
-            android:padding="16dp"
+            android:padding="12dp"
             android:background="@drawable/bg_panel_ruta"
             android:elevation="8dp"
             android:visibility="gone">
@@ -127,11 +125,11 @@
                 android:layout_height="wrap_content"
                 android:text="Tu recorrido"
                 android:textColor="#123B70"
-                android:textSize="17sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="8dp" />
 
-            <!-- Datos de la ruta -->
+            <!-- Distancia y tiempo -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -157,9 +155,9 @@
                         android:layout_height="wrap_content"
                         android:text="-- km"
                         android:textColor="#123B70"
-                        android:textSize="23sp"
+                        android:textSize="20sp"
                         android:textStyle="bold"
-                        android:layout_marginTop="4dp" />
+                        android:layout_marginTop="2dp" />
 
                 </LinearLayout>
 
@@ -183,20 +181,38 @@
                         android:layout_height="wrap_content"
                         android:text="-- min"
                         android:textColor="#123B70"
-                        android:textSize="23sp"
+                        android:textSize="20sp"
                         android:textStyle="bold"
-                        android:layout_marginTop="4dp" />
+                        android:layout_marginTop="2dp" />
 
                 </LinearLayout>
 
             </LinearLayout>
 
+            <!-- Cantidad de obstáculos -->
+            <TextView
+                android:id="@+id/tvCantidadObstaculos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="#D97706"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="Obstáculos registrados: 1" />
+
+            <!-- Mensaje de accesibilidad -->
+            <TextView
+                android:id="@+id/tvMensajeRuta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="#526780"
+                android:textSize="13sp"
+                tools:text="Se seleccionó la alternativa con menos obstáculos registrados." />
+
         </LinearLayout>
 
     </FrameLayout>
-
-
-
 
     <!-- Accesos rápidos del Home -->
     <LinearLayout
@@ -236,6 +252,7 @@
                 android:textColor="#123B70"
                 android:textStyle="bold"
                 android:textSize="12sp" />
+
         </LinearLayout>
 
         <!-- Reportar obstáculo -->
@@ -267,6 +284,7 @@
                 android:textColor="#123B70"
                 android:textStyle="bold"
                 android:textSize="12sp" />
+
         </LinearLayout>
 
         <!-- Configurar accesibilidad -->
@@ -298,9 +316,12 @@
                 android:textColor="#123B70"
                 android:textStyle="bold"
                 android:textSize="12sp" />
+
         </LinearLayout>
 
     </LinearLayout>
+
+    <!-- Botones de perfil y sesión -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -328,5 +349,7 @@
             android:textColor="#0755A6"
             android:textSize="14sp"
             android:backgroundTint="#DCEBFF" />
+
     </LinearLayout>
+
 </LinearLayout>

@@ -54,10 +54,15 @@ public class HomeActivity extends BaseActivity {
     // Marcador azul de la ubicación del usuario.
     private Marker marcadorUsuario;
 
+    private Marker marcadorOrigenRuta;
+    private Marker marcadorDestinoRuta;
+
     // Panel de información de la ruta.
     private LinearLayout panelRuta;
     private TextView tvDistanciaRuta;
     private TextView tvTiempoRuta;
+    private TextView tvCantidadObstaculos;
+    private TextView tvMensajeRuta;
     private TextView tvSaludo;
     private TextView tvDatos;
 
@@ -150,6 +155,8 @@ public class HomeActivity extends BaseActivity {
         panelRuta = findViewById(R.id.panelRuta);
         tvDistanciaRuta = findViewById(R.id.tvDistanciaRuta);
         tvTiempoRuta = findViewById(R.id.tvTiempoRuta);
+        tvCantidadObstaculos = findViewById(R.id.tvCantidadObstaculos);
+        tvMensajeRuta = findViewById(R.id.tvMensajeRuta);
 
         // Permiso de notificaciones (Android 13+).
         solicitarPermisoNotificaciones =
@@ -195,6 +202,7 @@ public class HomeActivity extends BaseActivity {
                         return;
                     }
 
+                    // Recuperar coordenadas
                     double[] latitudes =
                             datos.getDoubleArrayExtra("latitudesRuta");
 
@@ -217,6 +225,26 @@ public class HomeActivity extends BaseActivity {
                         return;
                     }
 
+                    // Recuperar información de la ruta
+                    double distancia = datos.getDoubleExtra(
+                            "distanciaMetros", 0
+                    );
+
+                    double duracion = datos.getDoubleExtra(
+                            "duracionSegundos", 0
+                    );
+
+                    int cantidadObstaculos = datos.getIntExtra(
+                            "cantidadObstaculos", 0
+                    );
+
+                    boolean esRutaLibre = datos.getBooleanExtra(
+                            "esRutaLibre", false
+                    );
+
+                    String mensaje = datos.getStringExtra("mensajeRuta");
+
+                    // Convertir coordenadas a GeoPoint
                     List<GeoPoint> puntosRuta = new ArrayList<>();
 
                     for (int i = 0; i < latitudes.length; i++) {
@@ -225,8 +253,36 @@ public class HomeActivity extends BaseActivity {
                         );
                     }
 
-                    // Dibujamos la ruta seleccionada.
+                    // Dibujar la ruta seleccionada
                     dibujarRutaEnMapa(puntosRuta);
+
+                    // Actualizar distancia y duración
+                    double distanciaKm = distancia / 1000.0;
+
+                    int minutos = (int) Math.round(duracion / 60.0);
+
+                    tvDistanciaRuta.setText(
+                            String.format(
+                                    Locale.getDefault(),
+                                    "%.2f km",
+                                    distanciaKm
+                            )
+                    );
+
+                    tvTiempoRuta.setText(minutos + " min");
+
+                    // Actualizar obstáculos
+                    tvCantidadObstaculos.setText(
+                            "Obstáculos registrados: " + cantidadObstaculos
+                    );
+
+                    // Actualizar mensaje
+                    tvMensajeRuta.setText(
+                            mensaje != null ? mensaje : "Sin información adicional."
+                    );
+
+                    // Mostrar el panel
+                    panelRuta.setVisibility(View.VISIBLE);
                 }
         );
 
@@ -643,22 +699,65 @@ public class HomeActivity extends BaseActivity {
 
     private void dibujarRutaEnMapa(List<GeoPoint> puntos) {
 
-        // Eliminar solamente la ruta anterior.
+        if (puntos == null || puntos.size() < 2) {
+            Toast.makeText(
+                    this,
+                    "La ruta no contiene suficientes puntos.",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
+
+        // Eliminar la ruta anterior
         if (rutaDibujada != null) {
             mapView.getOverlays().remove(rutaDibujada);
         }
 
+        // Dibujar la nueva ruta
         rutaDibujada = new Polyline();
-
         rutaDibujada.setPoints(puntos);
         rutaDibujada.setColor(Color.BLUE);
         rutaDibujada.setWidth(12f);
 
         mapView.getOverlays().add(rutaDibujada);
 
-        // Ajustar el mapa para mostrar toda la ruta.
-        BoundingBox limites = BoundingBox.fromGeoPoints(puntos);
+        // Eliminar los marcadores anteriores de la ruta
+        if (marcadorOrigenRuta != null) {
+            mapView.getOverlays().remove(marcadorOrigenRuta);
+        }
 
+        if (marcadorDestinoRuta != null) {
+            mapView.getOverlays().remove(marcadorDestinoRuta);
+        }
+
+        // Obtener origen y destino de la geometría
+        GeoPoint origen = puntos.get(0);
+        GeoPoint destino = puntos.get(puntos.size() - 1);
+
+        // Crear marcador de origen
+        marcadorOrigenRuta = new Marker(mapView);
+        marcadorOrigenRuta.setPosition(origen);
+        marcadorOrigenRuta.setAnchor(
+                Marker.ANCHOR_CENTER,
+                Marker.ANCHOR_BOTTOM
+        );
+        marcadorOrigenRuta.setTitle("Inicio del recorrido");
+
+        // Crear marcador de destino
+        marcadorDestinoRuta = new Marker(mapView);
+        marcadorDestinoRuta.setPosition(destino);
+        marcadorDestinoRuta.setAnchor(
+                Marker.ANCHOR_CENTER,
+                Marker.ANCHOR_BOTTOM
+        );
+        marcadorDestinoRuta.setTitle("Destino");
+
+        // Agregar marcadores al mapa
+        mapView.getOverlays().add(marcadorOrigenRuta);
+        mapView.getOverlays().add(marcadorDestinoRuta);
+
+        // Ajustar el mapa para mostrar todo el recorrido
+        BoundingBox limites = BoundingBox.fromGeoPoints(puntos);
         mapView.zoomToBoundingBox(limites, true);
 
         mapView.invalidate();
@@ -830,15 +929,16 @@ public class HomeActivity extends BaseActivity {
                 ruta.getDuracionSegundos() / 60.0
         );
 
-        tvDistanciaRuta.setText(
-                String.format(
-                        Locale.getDefault(),
-                        "%.2f km",
-                        distanciaKm
-                )
+        tvDistanciaRuta.setText(String.format(Locale.getDefault(), "%.2f km", distanciaKm));
+        tvTiempoRuta.setText(minutos + " min");
+
+// Mostrar cantidad de obstáculos
+        tvCantidadObstaculos.setText(
+                "Obstáculos registrados: " + ruta.getCantidadObstaculos()
         );
 
-        tvTiempoRuta.setText(minutos + " min");
+// Mostrar mensaje del backend
+        tvMensajeRuta.setText(ruta.getMensaje());
 
         panelRuta.setVisibility(View.VISIBLE);
     }
