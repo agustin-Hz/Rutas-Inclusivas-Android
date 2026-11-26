@@ -55,7 +55,7 @@ public class HomeActivity extends BaseActivity {
     // Marcador azul de la ubicación del usuario.
     private Marker marcadorUsuario;
 
-    private Marker marcadorOrigenRuta;
+
     private Marker marcadorDestinoRuta;
 
     // Panel de información de la ruta.
@@ -94,6 +94,8 @@ public class HomeActivity extends BaseActivity {
     // Datos del destino seleccionado.
     private String nombreDestinoSeleccionado;
     private String direccionDestinoSeleccionado;
+
+
 
     // NaN indica que todavía no se seleccionó un destino.
     private double latitudDestinoSeleccionado = Double.NaN;
@@ -392,6 +394,13 @@ public class HomeActivity extends BaseActivity {
                     HomeActivity.this,
                     BuscarDestinoActivity.class
             );
+
+            // Pasamos la ubicación actual para utilizarla al abrir el mapa.
+            if (latitudActual != null && longitudActual != null) {
+
+                intent.putExtra("latitudInicial", latitudActual);
+                intent.putExtra("longitudInicial", longitudActual);
+            }
 
             buscarDestinoLauncher.launch(intent);
         });
@@ -730,9 +739,6 @@ public class HomeActivity extends BaseActivity {
         mapView.getOverlays().add(rutaDibujada);
 
         // Eliminar los marcadores anteriores de la ruta
-        if (marcadorOrigenRuta != null) {
-            mapView.getOverlays().remove(marcadorOrigenRuta);
-        }
 
         if (marcadorDestinoRuta != null) {
             mapView.getOverlays().remove(marcadorDestinoRuta);
@@ -742,14 +748,7 @@ public class HomeActivity extends BaseActivity {
         GeoPoint origen = puntos.get(0);
         GeoPoint destino = puntos.get(puntos.size() - 1);
 
-        // Crear marcador de origen
-        marcadorOrigenRuta = new Marker(mapView);
-        marcadorOrigenRuta.setPosition(origen);
-        marcadorOrigenRuta.setAnchor(
-                Marker.ANCHOR_CENTER,
-                Marker.ANCHOR_BOTTOM
-        );
-        marcadorOrigenRuta.setTitle("Inicio del recorrido");
+
 
         // Crear marcador de destino
         marcadorDestinoRuta = new Marker(mapView);
@@ -759,9 +758,15 @@ public class HomeActivity extends BaseActivity {
                 Marker.ANCHOR_BOTTOM
         );
         marcadorDestinoRuta.setTitle("Destino");
+        marcadorDestinoRuta.setIcon(
+                ContextCompat.getDrawable(
+                        this,
+                        R.drawable.ic_destino_naranja
+                )
+        );
 
         // Agregar marcadores al mapa
-        mapView.getOverlays().add(marcadorOrigenRuta);
+
         mapView.getOverlays().add(marcadorDestinoRuta);
 
         // Ajustar el mapa para mostrar todo el recorrido

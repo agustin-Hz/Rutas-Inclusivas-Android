@@ -14,15 +14,35 @@
         android:padding="20dp">
 
         <!-- Encabezado -->
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="‹   Buscar destino"
-            android:textColor="#123B70"
-            android:textSize="23sp"
-            android:textStyle="bold"
-            android:paddingBottom="22dp"
-            android:contentDescription="Volver. Buscar destino" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="22dp">
+
+            <Button
+                android:id="@+id/btnVolverHome"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="0dp"
+                android:text="‹"
+                android:textColor="#123B70"
+                android:textSize="32sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Volver al inicio" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Buscar destino"
+                android:textColor="#123B70"
+                android:textSize="23sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
 
         <!-- Instrucción -->
         <TextView
@@ -48,7 +68,68 @@
             android:imeOptions="actionSearch"
             android:textSize="15sp" />
 
-        <!-- ACA SE VAN A MOSTRAR LOS RESULTADOS DE ESA BUSQUEDA -->
+        <!-- Tarjeta del destino seleccionado -->
+        <LinearLayout
+            android:id="@+id/layoutDestinoSeleccionado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#E3EEFC"
+            android:padding="16dp"
+            android:layout_marginTop="14dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✓ DESTINO SELECCIONADO"
+                android:textColor="#087443"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:paddingBottom="10dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📍"
+                    android:textSize="26sp"
+                    android:layout_marginEnd="12dp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvNombreDestinoSeleccionado"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#123B70"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvDireccionDestinoSeleccionado"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="#526780"
+                        android:textSize="13sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Resultados de búsqueda -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvDestinos"
             android:layout_width="match_parent"
@@ -57,54 +138,47 @@
             android:visibility="gone"
             android:nestedScrollingEnabled="false" />
 
-
-        <!-- Ubicación actual -->
+        <!-- Botón de destinos favoritos -->
         <Button
-            android:id="@+id/btnMiUbicacion"
+            android:id="@+id/btnDestinosFavoritos"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="20dp"
-            android:text="📍  Mi ubicación"
+            android:text="⭐  Destinos favoritos"
             android:textColor="#123B70"
             android:backgroundTint="#E3EEFC"
             android:gravity="start|center_vertical"
             android:paddingStart="16dp" />
 
-        <!-- Casa -->
-        <Button
-            android:id="@+id/btnCasa"
+        <!-- Panel de destinos favoritos -->
+        <LinearLayout
+            android:id="@+id/layoutFavoritos"
             android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="8dp"
-            android:text="⌂  Casa"
-            android:textColor="#123B70"
-            android:backgroundTint="#E3EEFC"
-            android:gravity="start|center_vertical"
-            android:paddingStart="16dp" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:layout_marginTop="10dp"
+            android:visibility="gone">
 
-        <!-- Trabajo -->
-        <Button
-            android:id="@+id/btnTrabajo"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="8dp"
-            android:text="▣  Trabajo"
-            android:textColor="#123B70"
-            android:backgroundTint="#E3EEFC"
-            android:gravity="start|center_vertical"
-            android:paddingStart="16dp" />
+            <!-- Contenedor dinámico de favoritos -->
+            <LinearLayout
+                android:id="@+id/contenedorFavoritos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
 
-        <!-- Puntos de interés -->
-        <Button
-            android:id="@+id/btnPuntosInteres"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="8dp"
-            android:text="★  Puntos de interés"
-            android:textColor="#123B70"
-            android:backgroundTint="#E3EEFC"
-            android:gravity="start|center_vertical"
-            android:paddingStart="16dp" />
+            <!-- Cerrar lista -->
+            <Button
+                android:id="@+id/btnCerrarFavoritos"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="12dp"
+                android:text="✕  Cerrar"
+                android:textColor="#123B70"
+                android:backgroundTint="#E3EEFC" />
+
+        </LinearLayout>
 
         <!-- Alternativas -->
         <TextView
@@ -117,6 +191,7 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
+        <!-- Seleccionar en el mapa -->
         <Button
             android:id="@+id/btnSeleccionarMapa"
             android:layout_width="match_parent"
@@ -125,6 +200,7 @@
             android:textColor="#0755A6"
             android:backgroundTint="#FFFFFF" />
 
+        <!-- Usar voz -->
         <Button
             android:id="@+id/btnUsarVoz"
             android:layout_width="match_parent"
@@ -134,13 +210,24 @@
             android:textColor="#0755A6"
             android:backgroundTint="#FFFFFF" />
 
-        <!-- Continuar -->
+        <!-- Guardar favorito -->
+        <Button
+            android:id="@+id/btnGuardarFavorito"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="16dp"
+            android:text="⭐ Guardar destino en favorito"
+            android:textColor="#123B70"
+            android:backgroundTint="#E3EEFC"
+            android:visibility="gone" />
+
+        <!-- Confirmar selección -->
         <Button
             android:id="@+id/btnCompararRutas"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="24dp"
-            android:text="Comparar rutas accesibles"
+            android:text="Confirmar selección"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
             android:backgroundTint="#0866D9" />
@@ -148,3 +235,4 @@
     </LinearLayout>
 
 </ScrollView>
+
