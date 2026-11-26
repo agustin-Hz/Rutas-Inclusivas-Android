@@ -31,6 +31,12 @@ public class SeleccionarUbicacionActivity extends BaseActivity {
         GeoPoint puntoInicial = new GeoPoint(latitudInicial, longitudInicial);
         mapView.getController().setCenter(puntoInicial);
 
+        Button btnVolverBusqueda = findViewById(R.id.btnVolverBusqueda);
+
+        btnVolverBusqueda.setOnClickListener(v -> {
+            finish();
+        });
+
         Button btnConfirmar = findViewById(R.id.btnConfirmarUbicacion);
 
         btnConfirmar.setOnClickListener(v -> {
