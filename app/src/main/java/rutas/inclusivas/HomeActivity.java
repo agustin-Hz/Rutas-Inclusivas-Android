@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -86,6 +87,10 @@ public class HomeActivity extends BaseActivity {
     private ActivityResultLauncher<Intent> buscarDestinoLauncher;
     private ActivityResultLauncher<Intent> reportarObstaculoLauncher;
 
+    // Motor de síntesis de voz.
+    private TextToSpeech tts;
+    private boolean ttsListo = false;
+
     // Datos del destino seleccionado.
     private String nombreDestinoSeleccionado;
     private String direccionDestinoSeleccionado;
@@ -113,6 +118,8 @@ public class HomeActivity extends BaseActivity {
         EdgeToEdge.enable(this);
 
         setContentView(R.layout.activity_home);
+
+        inicializarSintesisVoz();
 
         seleccionarUbicacionLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -147,6 +154,7 @@ public class HomeActivity extends BaseActivity {
 
                     if (resultado.getResultCode() == RESULT_OK) {
                         cargarReportesEnMapa();
+                        confirmarReportePorVoz();
                     }
                 }
         );
@@ -795,6 +803,11 @@ public class HomeActivity extends BaseActivity {
 
         if (mapView != null) {
             mapView.onDetach();
+        }
+
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
         }
 
         super.onDestroy();
@@ -1576,5 +1589,37 @@ public class HomeActivity extends BaseActivity {
                     }
                 }
         );
+    }
+
+    private void inicializarSintesisVoz() {
+        tts = new TextToSpeech(getApplicationContext(), estado -> {
+            if (estado == TextToSpeech.SUCCESS) {
+
+                int resultado = tts.setLanguage(new Locale("es", "AR"));
+
+                if (resultado == TextToSpeech.LANG_MISSING_DATA || resultado == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    resultado = tts.setLanguage(new Locale("es"));
+                }
+
+                if (resultado != TextToSpeech.LANG_MISSING_DATA && resultado != TextToSpeech.LANG_NOT_SUPPORTED) {
+                    ttsListo = true;
+                }
+            }
+        });
+    }
+
+    private void confirmarReportePorVoz() {
+
+        AccesibilidadPrefs prefs = new AccesibilidadPrefs(this);
+
+        if (prefs.isVoz() && ttsListo && tts != null) {
+
+            tts.speak(
+                    "El obstáculo se registró correctamente",
+                    TextToSpeech.QUEUE_FLUSH,
+                    null,
+                    "reporteExitoso"
+            );
+        }
     }
 }

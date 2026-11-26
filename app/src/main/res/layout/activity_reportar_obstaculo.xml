@@ -109,7 +109,7 @@
         <EditText
             android:id="@+id/etDescripcionReporte"
             android:layout_width="match_parent"
-            android:layout_height="120dp"
+            android:layout_height="100dp"
             android:layout_marginTop="8dp"
             android:backgroundTint="#0866D9"
             android:gravity="top|start"
@@ -119,12 +119,21 @@
             android:textColor="#123B70"
             android:textColorHint="#7A8CA5" />
 
+        <Button
+            android:id="@+id/btnDictarDescripcion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Dictar descripción"
+            android:textColor="#0755A6"
+            android:backgroundTint="#DCEBFF" />
+
         <!-- Enviar -->
         <Button
             android:id="@+id/btnEnviarReporte"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="12dp"
             android:layout_marginBottom="20dp"
             android:padding="12dp"
             android:text="Enviar reporte"

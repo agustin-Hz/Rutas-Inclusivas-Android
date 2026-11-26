@@ -7,9 +7,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.content.ActivityNotFoundException;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+
+import android.speech.RecognizerIntent;
+import java.util.ArrayList;
 
 import java.util.Locale;
 
@@ -26,6 +30,7 @@ public class ReportarObstaculoActivity extends BaseActivity {
     private Button btnSeleccionarEnMapa;
     private Button btnMiUbicacionReporte;
     private Button btnEnviarReporte;
+    private Button btnDictarDescripcion;
     private EditText etDescripcionReporte;
     private TextView tvUbicacionReporte;
 
@@ -37,6 +42,7 @@ public class ReportarObstaculoActivity extends BaseActivity {
 
     // Lanzador para abrir la pantalla de selección de ubicación.
     private ActivityResultLauncher<Intent> seleccionarUbicacionLauncher;
+    private ActivityResultLauncher<Intent> reconocimientoVozLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +58,7 @@ public class ReportarObstaculoActivity extends BaseActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 resultado -> {
 
-                    if (resultado.getResultCode() == RESULT_OK &&
-                            resultado.getData() != null) {
+                    if (resultado.getResultCode() == RESULT_OK && resultado.getData() != null) {
 
                         Intent datos = resultado.getData();
 
@@ -76,11 +81,35 @@ public class ReportarObstaculoActivity extends BaseActivity {
                 }
         );
 
+        reconocimientoVozLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                resultado -> {
+
+                    if (resultado.getResultCode() == RESULT_OK &&
+                            resultado.getData() != null) {
+
+                        ArrayList<String> resultados = resultado.getData().getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+
+                        if (resultados != null && !resultados.isEmpty()) {
+                            String textoReconocido = resultados.get(0);
+                            String descripcionActual = etDescripcionReporte.getText().toString();
+
+                            if (!descripcionActual.isEmpty() && !descripcionActual.endsWith(" ")) {
+                                etDescripcionReporte.append(" ");
+                            }
+
+                            etDescripcionReporte.append(textoReconocido);
+                        }
+                    }
+                }
+        );
+
         // Vinculamos los elementos del XML.
         spTipoObstaculo = findViewById(R.id.spTipoObstaculo);
         btnSeleccionarEnMapa = findViewById(R.id.btnSeleccionarEnMapa);
         btnMiUbicacionReporte = findViewById(R.id.btnMiUbicacionReporte);
         btnEnviarReporte = findViewById(R.id.btnEnviarReporte);
+        btnDictarDescripcion = findViewById(R.id.btnDictarDescripcion);
         etDescripcionReporte = findViewById(R.id.etDescripcionReporte);
         tvUbicacionReporte = findViewById(R.id.tvUbicacionReporte);
 
@@ -147,6 +176,7 @@ public class ReportarObstaculoActivity extends BaseActivity {
                 ).show();
             }
         });
+
         btnEnviarReporte.setOnClickListener(v -> {
 
             // Obtenemos la descripción escrita por el usuario.
@@ -183,6 +213,10 @@ public class ReportarObstaculoActivity extends BaseActivity {
                     latitudSeleccionada,
                     longitudSeleccionada
             );
+        });
+
+        btnDictarDescripcion.setOnClickListener(v -> {
+            iniciarReconocimientoVoz();
         });
     }
 
@@ -239,5 +273,23 @@ public class ReportarObstaculoActivity extends BaseActivity {
                     Toast.LENGTH_SHORT
             ).show();
         });
+    }
+
+    private void iniciarReconocimientoVoz() {
+        Intent intent = new Intent(
+                RecognizerIntent.ACTION_RECOGNIZE_SPEECH
+        );
+
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-AR");
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Describí el obstáculo");
+
+        try {
+            reconocimientoVozLauncher.launch(intent);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this,
+                    "El reconocimiento de voz no está disponible",
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 }
